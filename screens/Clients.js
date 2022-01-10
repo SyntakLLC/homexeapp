@@ -53,6 +53,7 @@ export default class Clients extends React.Component {
             ) {
                 apptList.push(
                     <DetailCard
+                        key={client.name}
                         name={client.name}
                         clientType={client.client_type}
                         gci={client.gci}

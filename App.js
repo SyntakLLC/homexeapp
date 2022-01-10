@@ -27,7 +27,7 @@ const Tab = createBottomTabNavigator();
 
 // REDUX INITIAL STATES:
 const initialState = {
-    name: 'Tyler Scaglione',
+    name: 'David Tran',
 };
 
 // The Redux change state functions

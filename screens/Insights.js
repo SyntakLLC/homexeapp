@@ -77,22 +77,76 @@ class Insights extends React.Component {
                         });
                 });
 
-            fetch('https://homexe.win/appointment/get')
-                .then((response) => response.json())
-                .then((data) =>
-                    this.setState({
-                        appointments: data,
-                    }),
-                );
-
             fetch('https://homexe.win/call/get')
                 .then((response) => response.json())
                 .then((data) =>
                     this.setState({
-                        calls: data,
+                        calls: data.filter((item) => {
+                            return item.user_name == this.props.name;
+                        }),
+                    }),
+                );
+
+            fetch('https://homexe.win/appointment/get')
+                .then((response) => response.json())
+                .then((data) =>
+                    this.setState({
+                        appointments: data.filter((item) => {
+                            return item.user_name == this.props.name;
+                        }),
                     }),
                 );
         } catch {}
+    }
+
+    returnListingVolume(statusFilter) {
+        var filteredListings = this.state.listings.filter((listing) => {
+            return listing.status == statusFilter;
+        });
+
+        if (filteredListings.length == 0) return 0;
+        else
+            return filteredListings
+                .map((listing) => {
+                    return listing.price;
+                })
+                .reduce((accumulator, curr) => accumulator + curr);
+    }
+
+    // returns the maximum income this user has had in the past year
+    returnMaximumHistoricalIncome(howManyToCutOff) {
+        let incomes = [
+            this.returnExpectedIncome(11),
+            this.returnExpectedIncome(10),
+            this.returnExpectedIncome(9),
+            this.returnExpectedIncome(8),
+            this.returnExpectedIncome(7),
+            this.returnExpectedIncome(6),
+            this.returnExpectedIncome(5),
+            this.returnExpectedIncome(4),
+            this.returnExpectedIncome(3),
+            this.returnExpectedIncome(2),
+            this.returnExpectedIncome(1),
+            this.returnExpectedIncome(0),
+        ];
+        return Math.max(...incomes.slice(howManyToCutOff));
+    }
+    // returns the number of days there was an element in the set
+    returnNumberOfSetDays(set) {
+        var datesArrays = [];
+        set.forEach((item) => {
+            datesArrays.push(moment(item.created_at).format('MM-DD-YYYY'));
+        });
+        return datesArrays.filter(this.onlyUnique).length;
+    }
+
+    // # of appointment with 100% signed contract
+    returnNumberOfSignedContracts() {
+        return this.state.appointments.filter(
+            (appt) =>
+                appt.odds_of_conversion === '1' &&
+                appt.user_name == this.props.name,
+        ).length;
     }
 
     // gives THIS USER'S the number of X made today
@@ -126,26 +180,6 @@ class Insights extends React.Component {
         return moment(item.created_at).isSame(moment(), 'month');
     }
 
-    // returns the maximum income this user has had in the past year
-    returnMaximumHistoricalIncome(howManyToCutOff) {
-        let incomes = [
-            this.returnExpectedIncome(10),
-            this.returnExpectedIncome(9),
-            this.returnExpectedIncome(8),
-            this.returnExpectedIncome(7),
-            this.returnExpectedIncome(6),
-            this.returnExpectedIncome(5),
-            this.returnExpectedIncome(4),
-            this.returnExpectedIncome(3),
-            this.returnExpectedIncome(2),
-            this.returnExpectedIncome(1),
-            this.returnExpectedIncome(0),
-            this.returnExpectedIncome(-1),
-            this.returnExpectedIncome(-2),
-        ];
-        return Math.max(...incomes.slice(howManyToCutOff));
-    }
-
     // to draw the chart, we want to show the change in expected income over time.
     // so, we need to, for each month, show the expected income based on the prior months.
     returnExpectedIncome(month) {
@@ -161,7 +195,8 @@ class Insights extends React.Component {
     // calculates the user's average daily call count
     returnDailyCallCount(month) {
         let now = moment().subtract(month, 'months');
-        let your_date = moment('2021-10-05');
+
+        let your_date = moment('2021-11-28');
         let num_of_days = now.diff(your_date, 'days') + 1;
 
         try {
@@ -188,7 +223,7 @@ class Insights extends React.Component {
             return Math.abs(
                 this.state.appointments.filter((appt) => {
                     return (
-                        appt.user_name === this.props.name &&
+                        appt.user_name === user.name &&
                         moment(appt.created_at).isBefore(now)
                     );
                 }).length / num_of_days,
@@ -198,18 +233,60 @@ class Insights extends React.Component {
         }
     }
 
-    returnListingVolume(statusFilter) {
-        var filteredListings = this.state.listings.filter((listing) => {
-            return listing.status == statusFilter;
-        });
+    // shifts the month list so the current month is first
+    returnMonthList() {
+        var months = [
+            'Jan',
+            'Feb',
+            'Mar',
+            'Apr',
+            'May',
+            'Jun',
+            'Jul',
+            'Aug',
+            'Sep',
+            'Oct',
+            'Nov',
+            'Dec',
+        ];
 
-        if (filteredListings.length == 0) return 0;
-        else
-            return filteredListings
-                .map((listing) => {
-                    return listing.price;
-                })
-                .reduce((accumulator, curr) => accumulator + curr);
+        let now = moment().format('MMMM');
+        let n = months.indexOf(now.toString()) + 2;
+        months = this.arrayRotate(months, false, n);
+
+        return months;
+    }
+
+    // divides the calls by appointments, and if there are no appointments, returns 0
+    returnConversionRate() {
+        let usersCalls = this.state.calls.filter(
+            (call) => call.user_name === this.props.name,
+        ).length;
+        let usersAppts = this.state.appointments.filter(
+            (appt) => appt.user_name === this.props.name,
+        ).length;
+        if (usersAppts === 0) return 0;
+
+        var conversionRate = usersCalls / usersAppts;
+        if (this.state.appointments.length === 0) {
+            conversionRate = 0;
+        }
+
+        return this.numberWithCommas(conversionRate.toFixed(2));
+    }
+
+    // rotates an array n times
+    arrayRotate(arr, reverse, n) {
+        if (reverse) {
+            for (let i = 0; i < n; i++) {
+                arr.unshift(arr.pop());
+            }
+        } else {
+            for (let i = 0; i < n; i++) {
+                arr.push(arr.shift());
+            }
+        }
+        return arr;
     }
 
     numberWithCommas(x) {
@@ -261,7 +338,7 @@ class Insights extends React.Component {
                                             '$' +
                                             this.numberWithCommas(
                                                 this.returnExpectedIncome(
-                                                    -2,
+                                                    0,
                                                 ).toFixed(2),
                                             )
                                         }

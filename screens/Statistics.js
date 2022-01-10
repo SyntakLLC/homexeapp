@@ -41,16 +41,64 @@ class Statistics extends React.Component {
         appointments: [],
     };
 
-    componentDidMount() {
+    async componentDidMount() {
         try {
-            fetch('https://homexe.win/call/get')
+            await fetch('https://homexe.win/call/get')
                 .then((response) => response.json())
-                .then((data) => this.setState({ calls: data }));
+                .then((data) =>
+                    this.setState({
+                        calls: data.filter((item) => {
+                            return item.user_name == this.props.name;
+                        }),
+                    }),
+                );
 
-            fetch('https://homexe.win/appointment/get')
+            await fetch('https://homexe.win/appointment/get')
                 .then((response) => response.json())
-                .then((data) => this.setState({ appointments: data }));
+                .then((data) =>
+                    this.setState({
+                        appointments: data.filter((item) => {
+                            return item.user_name == this.props.name;
+                        }),
+                    }),
+                );
         } catch {}
+    }
+
+    // returns the maximum income this user has had in the past year
+    returnMaximumHistoricalIncome(howManyToCutOff) {
+        let incomes = [
+            this.returnExpectedIncome(11),
+            this.returnExpectedIncome(10),
+            this.returnExpectedIncome(9),
+            this.returnExpectedIncome(8),
+            this.returnExpectedIncome(7),
+            this.returnExpectedIncome(6),
+            this.returnExpectedIncome(5),
+            this.returnExpectedIncome(4),
+            this.returnExpectedIncome(3),
+            this.returnExpectedIncome(2),
+            this.returnExpectedIncome(1),
+            this.returnExpectedIncome(0),
+        ];
+        return Math.max(...incomes.slice(howManyToCutOff));
+    }
+    // returns the number of days there was an element in the set
+    returnNumberOfSetDays(set) {
+        var datesArrays = [];
+        set.forEach((item) => {
+            datesArrays.push(moment(item.created_at).format('MM-DD-YYYY'));
+        });
+        return datesArrays.filter(this.onlyUnique).length;
+    }
+
+    // # of appointment with 100% signed contract
+    returnNumberOfSignedContracts() {
+        return this.state.appointments.filter(
+            (appt) =>
+                appt.odds_of_conversion === '1' &&
+                appt.user_name == this.props.name,
+        ).length;
     }
 
     // gives THIS USER'S the number of X made today
@@ -99,7 +147,8 @@ class Statistics extends React.Component {
     // calculates the user's average daily call count
     returnDailyCallCount(month) {
         let now = moment().subtract(month, 'months');
-        let your_date = moment('2021-10-05');
+
+        let your_date = moment('2021-11-28');
         let num_of_days = now.diff(your_date, 'days') + 1;
 
         try {
@@ -126,7 +175,7 @@ class Statistics extends React.Component {
             return Math.abs(
                 this.state.appointments.filter((appt) => {
                     return (
-                        appt.user_name === this.props.name &&
+                        appt.user_name === user.name &&
                         moment(appt.created_at).isBefore(now)
                     );
                 }).length / num_of_days,
@@ -139,22 +188,22 @@ class Statistics extends React.Component {
     // shifts the month list so the current month is first
     returnMonthList() {
         var months = [
-            'January',
-            'February',
-            'March',
-            'April',
+            'Jan',
+            'Feb',
+            'Mar',
+            'Apr',
             'May',
-            'June',
-            'July',
-            'August',
-            'September',
-            'October',
-            'November',
-            'December',
+            'Jun',
+            'Jul',
+            'Aug',
+            'Sep',
+            'Oct',
+            'Nov',
+            'Dec',
         ];
 
         let now = moment().format('MMMM');
-        let n = months.indexOf(now.toString()) + 1;
+        let n = months.indexOf(now.toString()) + 2;
         months = this.arrayRotate(months, false, n);
 
         return months;
@@ -229,31 +278,17 @@ class Statistics extends React.Component {
                 <View>
                     <LineChart
                         data={{
-                            labels: [
-                                'Jan',
-                                'Feb',
-                                'Mar',
-                                'Apr',
-                                'May',
-                                'Jun',
-                                'Jul',
-                                'Aug',
-                                'Sep',
-                                'Oct',
-                                'Nov',
-                                'Dec',
-                            ],
+                            labels: this.returnMonthList(),
                             legend: [
                                 'Estimated Income: ' +
                                     this.numberWithCommas(
-                                        this.returnExpectedIncome(-2).toFixed(
-                                            2,
-                                        ),
+                                        this.returnExpectedIncome(0).toFixed(2),
                                     ),
                             ],
                             datasets: [
                                 {
                                     data: [
+                                        this.returnExpectedIncome(11),
                                         this.returnExpectedIncome(10),
                                         this.returnExpectedIncome(9),
                                         this.returnExpectedIncome(8),
@@ -265,8 +300,6 @@ class Statistics extends React.Component {
                                         this.returnExpectedIncome(2),
                                         this.returnExpectedIncome(1),
                                         this.returnExpectedIncome(0),
-                                        this.returnExpectedIncome(-1),
-                                        this.returnExpectedIncome(-2),
                                     ],
                                 },
                             ],

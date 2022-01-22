@@ -1,18 +1,25 @@
 import React from 'react';
 import tailwind from 'tailwind-rn';
-import { LineChart } from 'react-native-chart-kit';
+// import { LineChart } from 'react-native-chart-kit';
+import LineChart from '../components/LineChart';
 import {
     ScrollView,
     View,
     ActivityIndicator,
+    TouchableOpacity,
     SafeAreaView,
     Dimensions,
     Text,
+    Animated,
 } from 'react-native';
 import moment from 'moment';
 import { DollarSymbol, HomeSymbol, LeadSymbol, PhoneSymbol } from '../icons';
 import ActivityRings from 'react-native-activity-rings';
 import { connect } from 'react-redux';
+import styled from 'styled-components';
+import axios from 'axios';
+
+axios.defaults.baseURL = 'http://homexe.win';
 
 // Where we grab the redux name state
 function mapStateToProps(state) {
@@ -34,30 +41,39 @@ class NewDashboard extends React.Component {
     state = {
         calls: [],
         appointments: [],
+        loginModalTop: new Animated.Value(-550),
+        pickerOpen: false,
+        hasLoggedIn: true,
+        loginEmail: '',
+        loginPassword: '',
     };
 
-    async componentDidMount() {
+    componentDidMount() {
         try {
-            await fetch('https://homexe.win/call/get')
-                .then((response) => response.json())
-                .then((data) =>
-                    this.setState({
-                        calls: data.filter((item) => {
-                            return item.user_name == this.props.name;
-                        }),
-                    }),
-                );
-
-            await fetch('https://homexe.win/appointment/get')
-                .then((response) => response.json())
-                .then((data) =>
-                    this.setState({
-                        appointments: data.filter((item) => {
-                            return item.user_name == this.props.name;
-                        }),
-                    }),
-                );
+            this.refreshData();
         } catch {}
+    }
+
+    async refreshData() {
+        await fetch('https://homexe.win/call/get')
+            .then((response) => response.json())
+            .then((data) =>
+                this.setState({
+                    calls: data.filter((item) => {
+                        return item.user_name == this.props.name;
+                    }),
+                }),
+            );
+
+        await fetch('https://homexe.win/appointment/get')
+            .then((response) => response.json())
+            .then((data) =>
+                this.setState({
+                    appointments: data.filter((item) => {
+                        return item.user_name == this.props.name;
+                    }),
+                }),
+            );
     }
 
     // returns the maximum income this user has had in the past year
@@ -180,179 +196,111 @@ class NewDashboard extends React.Component {
         }
     }
 
-    // shifts the month list so the current month is first
-    returnMonthList() {
-        var months = [
-            'Jan',
-            'Feb',
-            'Mar',
-            'Apr',
-            'May',
-            'Jun',
-            'Jul',
-            'Aug',
-            'Sep',
-            'Oct',
-            'Nov',
-            'Dec',
-        ];
-
-        let now = moment().format('MMMM');
-        let n = months.indexOf(now.toString()) + 2;
-        months = this.arrayRotate(months, false, n);
-
-        return months;
-    }
-
-    // divides the calls by appointments, and if there are no appointments, returns 0
-    returnConversionRate() {
-        let usersCalls = this.state.calls.filter(
-            (call) => call.user_name === this.props.name,
-        ).length;
-        let usersAppts = this.state.appointments.filter(
-            (appt) => appt.user_name === this.props.name,
-        ).length;
-        if (usersAppts === 0) return 0;
-
-        var conversionRate = usersCalls / usersAppts;
-        if (this.state.appointments.length === 0) {
-            conversionRate = 0;
-        }
-
-        return this.numberWithCommas(conversionRate.toFixed(2));
-    }
-
-    // rotates an array n times
-    arrayRotate(arr, reverse, n) {
-        if (reverse) {
-            for (let i = 0; i < n; i++) {
-                arr.unshift(arr.pop());
-            }
-        } else {
-            for (let i = 0; i < n; i++) {
-                arr.push(arr.shift());
-            }
-        }
-        return arr;
-    }
-
-    numberWithCommas(x) {
-        return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-    }
-
     onlyUnique(value, index, self) {
         return self.indexOf(value) === index;
     }
 
-    renderDashboardData() {
-        var dashboardData = [];
+    // opens the login modal
+    openModal() {
+        this.setState({
+            pickerOpen: true,
+        });
 
-        if (this.state.calls.length == 0) {
-            dashboardData.push(
-                <View
-                    style={{
-                        height: 253,
-                        width: '100%',
-                        alignSelf: 'center',
-                        backgroundColor: global.chartColor,
-                        borderRadius: 25,
-                    }}
-                >
-                    <ActivityIndicator
-                        color={global.primaryColor}
-                        style={{
-                            height: 253,
-                            width: '100%',
-                            alignSelf: 'center',
-                        }}
-                    />
-                </View>,
-            );
-        } else {
-            dashboardData.push(
-                <View>
-                    <LineChart
-                        data={{
-                            labels: this.returnMonthList(),
-                            legend: [
-                                'Estimated Income: ' +
-                                    this.numberWithCommas(
-                                        this.returnExpectedIncome(0).toFixed(2),
-                                    ),
-                            ],
-                            datasets: [
-                                {
-                                    data: [
-                                        this.returnExpectedIncome(11),
-                                        this.returnExpectedIncome(10),
-                                        this.returnExpectedIncome(9),
-                                        this.returnExpectedIncome(8),
-                                        this.returnExpectedIncome(7),
-                                        this.returnExpectedIncome(6),
-                                        this.returnExpectedIncome(5),
-                                        this.returnExpectedIncome(4),
-                                        this.returnExpectedIncome(3),
-                                        this.returnExpectedIncome(2),
-                                        this.returnExpectedIncome(1),
-                                        this.returnExpectedIncome(0),
-                                    ],
-                                },
-                            ],
-                        }}
-                        width={Dimensions.get('window').width - 30} // from react-native
-                        height={220}
-                        yAxisLabel='$'
-                        yAxisInterval={1} // optional, defaults to 1
-                        chartConfig={{
-                            backgroundColor: global.chartColor,
-                            backgroundGradientFrom: global.chartColor,
-                            backgroundGradientTo: global.chartColor,
-                            decimalPlaces: 2, // optional, defaults to 2dp
-                            color: (opacity = 1) =>
-                                `rgba(29, 79, 202, ${opacity})`,
-                            labelColor: (opacity = 1) =>
-                                `rgba(29, 79, 202, ${opacity})`,
-                            style: {
-                                borderRadius: 25,
-                            },
-                            propsForDots: {
-                                r: '6',
-                                strokeWidth: '2',
-                                stroke: global.grayColor,
-                            },
-                        }}
-                        bezier
-                        style={{
-                            borderRadius: 25,
-                        }}
-                    />
-                </View>,
-            );
-        }
+        Animated.spring(this.state.loginModalTop, {
+            toValue: -550,
+            duration: 10000,
+            useNativeDriver: false,
+        }).start();
+    }
 
-        return <View>{dashboardData}</View>;
+    // CLOSES the login modal
+    closeModal() {
+        this.setState({
+            pickerOpen: false,
+        });
+
+        Animated.spring(this.state.loginModalTop, {
+            toValue: -global.screenHeight + 800,
+            duration: 10000,
+            useNativeDriver: false,
+        }).start();
+    }
+
+    // signs in
+    signIn() {
+        try {
+            var url = 'http://homexe.win/api/sanctum/token';
+
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', url);
+
+            xhr.setRequestHeader('Content-Type', 'application/json');
+
+            xhr.onreadystatechange = () => {
+                if (xhr.readyState === 4) {
+                    // console.log(xhr.status);
+                    // console.log(xhr.responseText);
+
+                    let name = JSON.parse(xhr.responseText).user.name;
+                    this.props.updateName(name);
+
+                    this.closeModal();
+                    this.setState({ hasLoggedIn: true });
+                    this.refreshData();
+                }
+            };
+
+            var data =
+                '{"email": "' +
+                this.state.loginEmail +
+                '", "password": "' +
+                this.state.loginPassword +
+                '", "device_name": "Homexe.win App"}';
+
+            console.log(data);
+
+            xhr.send(data);
+        } catch {}
     }
 
     render() {
         return (
             <SafeAreaView
-                style={{
-                    paddingHorizontal: 8,
-                    backgroundColor: '#fff',
-                    height: Dimensions.get('window').height,
-                }}
+                style={{}}
+                pointerEvents={this.state.pickerOpen ? 'none' : 'auto'}
+                style={
+                    this.state.pickerOpen
+                        ? {
+                              opacity: 0.4,
+                              height: global.screenHeight,
+                              width: global.screenWidth,
+                              paddingHorizontal: 8,
+                              backgroundColor: '#fff',
+                              height: Dimensions.get('window').height,
+                          }
+                        : {
+                              height: global.screenHeight,
+                              width: global.screenWidth,
+                              paddingHorizontal: 8,
+                              backgroundColor: '#fff',
+                              height: Dimensions.get('window').height,
+                          }
+                }
             >
                 <ScrollView
                     style={{ paddingHorizontal: 16 }}
                     contentContainerStyle={{ paddingBottom: 120 }}
                 >
-                    <View style={tailwind('mt-6 mb-4 flex-col')}>
+                    <TouchableOpacity
+                        style={tailwind('mt-6 mb-4 flex-col')}
+                        onPress={() => {
+                            this.props.navigation.navigate('Login');
+                        }}
+                    >
                         <Title text='WELCOME!' />
                         <Subtitle text={this.props.name} />
-                    </View>
-
-                    {this.renderDashboardData()}
-
+                    </TouchableOpacity>
+                    <LineChart />
                     <RowView
                         first={
                             <DetailCard
@@ -455,22 +403,24 @@ class NewDashboard extends React.Component {
                             />
                         }
                     />
-
                     {/*<RowView
-                        first={
-                            <DetailCard
-                                text='Top 25'
-                                symbol={<UsersSymbol width={30} height={30} />}
-                            />
-                        }
-                        second={
-                            <DetailCard
-                                text='Metrics'
-                                symbol={<MetricsSymbol width={30} height={30} />}
-                            />
-                        }
-                    />*/}
-
+                            first={
+                                <DetailCard
+                                    text='Top 25'
+                                    symbol={
+                                        <UsersSymbol width={30} height={30} />
+                                    }
+                                />
+                            }
+                            second={
+                                <DetailCard
+                                    text='Metrics'
+                                    symbol={
+                                        <MetricsSymbol width={30} height={30} />
+                                    }
+                                />
+                            }
+                        />*/}
                     <RowView
                         first={
                             <DetailCard
@@ -649,3 +599,159 @@ const DetailCard = (item) => (
         <View>{item.content}</View>
     </View>
 );
+
+const NamePickerOverlay = (item) => (
+    <AnimatedModalView
+        style={{
+            top: item.top,
+        }}
+    >
+        {/* The Background */}
+        <ModalButtonView
+            style={{
+                width: 300,
+                height: 280,
+                padding: 20,
+                marginLeft: 0,
+                paddingTop: 40,
+            }}
+        >
+            {/* The Title where it says login or signup */}
+            <ModalButtonText
+                style={{ marginLeft: 0, color: global.primaryColor }}
+            >
+                {item.loginOrSignup == 'Login' ? 'Login' : 'Sign Up'}
+            </ModalButtonText>
+
+            {/* The 2 or 4 text inputs depending on if it's logging in or signing up */}
+            <LoginInput
+                style={{
+                    backgroundColor: global.grayColor,
+                }}
+                placeholder='EMAIL'
+                fontWeight='bold'
+                autoCorrect={false}
+                placeholderTextColor='#11182750'
+                onChangeText={(val) => {
+                    item.updateLoginEmail(val);
+                }}
+            />
+            <LoginInput
+                style={{
+                    backgroundColor: global.grayColor,
+                }}
+                placeholder='PASSWORD'
+                fontWeight='bold'
+                blurOnSubmit={false}
+                onSubmitEditing={() => Keyboard.dismiss()}
+                secureTextEntry={true}
+                placeholderTextColor='#11182750'
+                onChangeText={(val) => {
+                    item.updateLoginPassword(val);
+                }}
+            />
+
+            {/* The actual log in/sign up button where it does it */}
+            <TouchableOpacity
+                onPress={() => {
+                    item.signIn();
+                }}
+                style={{
+                    // bottom: '4%',
+                    top: 20,
+                    height: 40,
+                    width: '100%',
+                    alignSelf: 'center',
+                    marginLeft: 16,
+                }}
+            >
+                <SelectButton style={{ backgroundColor: global.primaryColor }}>
+                    <AddJobText>Log In</AddJobText>
+                </SelectButton>
+            </TouchableOpacity>
+        </ModalButtonView>
+
+        {/* The image logo on top for looks */}
+        <LoginLogo
+            source={{ uri: 'https://i.imgur.com/obvXOnI.gif' }}
+            style={{ bottom: 350 }}
+        />
+    </AnimatedModalView>
+);
+
+const LoginLogo = styled.Image`
+    width: 80px;
+    height: 80px;
+    bottom: 420px;
+    border-radius: 20px;
+    overflow: hidden;
+    border-color: #ffffff60;
+    border-width: 0.5px;
+    /* box-shadow: 0px 0px 20px rgba(0, 0, 0, 1); */
+`;
+
+const ModalView = styled.View`
+    flex: 1;
+    align-items: center;
+    justify-content: flex-start;
+    box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.1);
+    z-index: 50;
+`;
+
+const AnimatedModalView = Animated.createAnimatedComponent(ModalView);
+
+const LoginInput = styled.TextInput`
+    height: 40px;
+    border-radius: 20px;
+    background-color: rgb(230, 230, 230);
+    width: 90%;
+    padding-left: 20px;
+    margin-top: 10px;
+    color: #111827;
+`;
+
+const SelectButton = styled.View`
+    height: 50px;
+    width: 94%;
+    flex: 1;
+    color: white;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+`;
+
+const AddJobText = styled.Text`
+    font-weight: 700;
+    font-size: 17px;
+    color: white;
+    text-align: center;
+    line-height: 22px;
+`;
+
+const ModalButtonView = styled.View`
+    width: 90%;
+    min-height: 120;
+    margin-left: 5%;
+    border-radius: 15;
+    background-color: rgb(255, 255, 255);
+    align-items: center;
+    margin-bottom: 20;
+    overflow: hidden;
+    box-shadow: 5px 5px 10px black;
+`;
+
+const ModalButtonText = styled.Text`
+    font-size: 25;
+    font-weight: 600;
+    color: black;
+    margin-left: 20;
+    margin-bottom: 10;
+`;
+
+const ModalSubtitle = styled.Text`
+    font-size: 16;
+    color: black;
+    margin-left: 20;
+    margin-right: 20;
+    margin-top: 10;
+`;

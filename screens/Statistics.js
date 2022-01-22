@@ -1,6 +1,6 @@
 import React from 'react';
 import tailwind from 'tailwind-rn';
-import { LineChart } from 'react-native-chart-kit';
+import LineChart from '../components/LineChart';
 import {
     TouchableOpacity,
     ScrollView,
@@ -185,28 +185,8 @@ class Statistics extends React.Component {
         }
     }
 
-    // shifts the month list so the current month is first
-    returnMonthList() {
-        var months = [
-            'Jan',
-            'Feb',
-            'Mar',
-            'Apr',
-            'May',
-            'Jun',
-            'Jul',
-            'Aug',
-            'Sep',
-            'Oct',
-            'Nov',
-            'Dec',
-        ];
-
-        let now = moment().format('MMMM');
-        let n = months.indexOf(now.toString()) + 2;
-        months = this.arrayRotate(months, false, n);
-
-        return months;
+    numberWithCommas(x) {
+        return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
     }
 
     // divides the calls by appointments, and if there are no appointments, returns 0
@@ -241,103 +221,6 @@ class Statistics extends React.Component {
         return arr;
     }
 
-    numberWithCommas(x) {
-        return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-    }
-
-    onlyUnique(value, index, self) {
-        return self.indexOf(value) === index;
-    }
-
-    renderDashboardData() {
-        var dashboardData = [];
-
-        if (this.state.calls.length == 0) {
-            dashboardData.push(
-                <View
-                    style={{
-                        height: 345,
-                        width: '100%',
-                        alignSelf: 'center',
-                        backgroundColor: global.chartColor,
-                        borderRadius: 25,
-                    }}
-                >
-                    <ActivityIndicator
-                        color={global.primaryColor}
-                        style={{
-                            height: 345,
-                            width: '100%',
-                            alignSelf: 'center',
-                        }}
-                    />
-                </View>,
-            );
-        } else {
-            dashboardData.push(
-                <View>
-                    <LineChart
-                        data={{
-                            labels: this.returnMonthList(),
-                            legend: [
-                                'Estimated Income: ' +
-                                    this.numberWithCommas(
-                                        this.returnExpectedIncome(0).toFixed(2),
-                                    ),
-                            ],
-                            datasets: [
-                                {
-                                    data: [
-                                        this.returnExpectedIncome(11),
-                                        this.returnExpectedIncome(10),
-                                        this.returnExpectedIncome(9),
-                                        this.returnExpectedIncome(8),
-                                        this.returnExpectedIncome(7),
-                                        this.returnExpectedIncome(6),
-                                        this.returnExpectedIncome(5),
-                                        this.returnExpectedIncome(4),
-                                        this.returnExpectedIncome(3),
-                                        this.returnExpectedIncome(2),
-                                        this.returnExpectedIncome(1),
-                                        this.returnExpectedIncome(0),
-                                    ],
-                                },
-                            ],
-                        }}
-                        width={Dimensions.get('window').width - 30} // from react-native
-                        height={300}
-                        yAxisLabel='$'
-                        yAxisInterval={1} // optional, defaults to 1
-                        chartConfig={{
-                            backgroundColor: global.chartColor,
-                            backgroundGradientFrom: global.chartColor,
-                            backgroundGradientTo: global.chartColor,
-                            decimalPlaces: 2, // optional, defaults to 2dp
-                            color: (opacity = 1) =>
-                                `rgba(29, 79, 202, ${opacity})`,
-                            labelColor: (opacity = 1) =>
-                                `rgba(29, 79, 202, ${opacity})`,
-                            style: {
-                                borderRadius: 25,
-                            },
-                            propsForDots: {
-                                r: '6',
-                                strokeWidth: '2',
-                                stroke: global.grayColor,
-                            },
-                        }}
-                        bezier
-                        style={{
-                            borderRadius: 25,
-                        }}
-                    />
-                </View>,
-            );
-        }
-
-        return <View>{dashboardData}</View>;
-    }
-
     render() {
         return (
             <SafeAreaView
@@ -354,7 +237,9 @@ class Statistics extends React.Component {
                     <View style={tailwind('mt-6 mb-4 flex-col')}>
                         <Title text='Statistics' />
                     </View>
-                    {this.renderDashboardData()}
+
+                    <LineChart />
+
                     <DetailCard
                         first={
                             <InfoBubble

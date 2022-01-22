@@ -9,8 +9,13 @@ import {
     Dimensions,
     Text,
     Alert,
+    AsyncStorage,
 } from 'react-native';
 import { connect } from 'react-redux';
+
+// AsyncStorage stuff regarding the login status:
+const USER_KEY = 'auth-key-csv';
+const onSignOut = () => AsyncStorage.removeItem(USER_KEY);
 
 // Where we grab the redux name state
 function mapStateToProps(state) {
@@ -161,6 +166,23 @@ class Users extends React.Component {
                                 </TouchableOpacity>
                             }
                         />
+
+                        <TouchableOpacity
+                            style={{
+                                width: '100%',
+                                alignItems: 'center',
+                                marginTop: 50,
+                            }}
+                            onPress={() => {
+                                onSignOut();
+                                this.props.navigation.navigate('Login');
+                            }}
+                        >
+                            <LogoutButton
+                                reduxName={this.props.name}
+                                text='Logout'
+                            />
+                        </TouchableOpacity>
                     </ScrollView>
                 </SafeAreaView>
             </View>
@@ -169,6 +191,23 @@ class Users extends React.Component {
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(Users);
+
+const LogoutButton = (item) => (
+    <View
+        style={{
+            width: Dimensions.get('window').width / 2 - 20,
+            borderRadius: 200,
+            minHeight: 50,
+            borderColor: global.primaryColor,
+            borderWidth: 2,
+            backgroundColor: 'white',
+            justifyContent: 'center',
+            marginBottom: 10,
+        }}
+    >
+        <SmallerTitle reduxName={item.reduxName} text={item.text} />
+    </View>
+);
 
 const CategoryButton = (item) => (
     <View

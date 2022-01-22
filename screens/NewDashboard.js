@@ -11,15 +11,17 @@ import {
     Dimensions,
     Text,
     Animated,
+    AsyncStorage,
 } from 'react-native';
 import moment from 'moment';
 import { DollarSymbol, HomeSymbol, LeadSymbol, PhoneSymbol } from '../icons';
 import ActivityRings from 'react-native-activity-rings';
 import { connect } from 'react-redux';
 import styled from 'styled-components';
-import axios from 'axios';
 
-axios.defaults.baseURL = 'http://homexe.win';
+// AsyncStorage stuff regarding the login status:
+const USER_KEY = 'auth-key-csv';
+const onSignOut = () => AsyncStorage.removeItem(USER_KEY);
 
 // Where we grab the redux name state
 function mapStateToProps(state) {
@@ -291,15 +293,10 @@ class NewDashboard extends React.Component {
                     style={{ paddingHorizontal: 16 }}
                     contentContainerStyle={{ paddingBottom: 120 }}
                 >
-                    <TouchableOpacity
-                        style={tailwind('mt-6 mb-4 flex-col')}
-                        onPress={() => {
-                            this.props.navigation.navigate('Login');
-                        }}
-                    >
+                    <View style={tailwind('mt-6 mb-4 flex-col')}>
                         <Title text='WELCOME!' />
                         <Subtitle text={this.props.name} />
-                    </TouchableOpacity>
+                    </View>
                     <LineChart />
                     <RowView
                         first={

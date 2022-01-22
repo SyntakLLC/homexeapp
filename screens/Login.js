@@ -5,12 +5,29 @@ import {
     Dimensions,
     Text,
     Animated,
+    Alert,
+    AsyncStorage,
+    ActivityIndicator,
 } from 'react-native';
 import { connect } from 'react-redux';
 import styled from 'styled-components';
-import axios from 'axios';
 
-axios.defaults.baseURL = 'http://homexe.win';
+// AsyncStorage stuff regarding the login status:
+const USER_KEY = 'auth-key-csv';
+const onSignIn = () => AsyncStorage.setItem(USER_KEY, 'true');
+isSignedIn = () => {
+    return new Promise((resolve, reject) => {
+        AsyncStorage.getItem(USER_KEY)
+            .then((res) => {
+                if (res !== null) {
+                    resolve(true);
+                } else {
+                    resolve(false);
+                }
+            })
+            .catch((err) => reject(err));
+    });
+};
 
 // Where we grab the redux name state
 function mapStateToProps(state) {
@@ -37,7 +54,20 @@ class Login extends React.Component {
         hasLoggedIn: false,
         loginEmail: '',
         loginPassword: '',
+        isLoggingIn: false,
     };
+
+    async componentDidMount() {
+        // This code is run whenever navigation comes to this screen
+        // this.props.navigation.addListener('focus', async () => {
+        this.retrieveName();
+        await isSignedIn()
+            .then((res) => {
+                res ? this.props.navigation.navigate('Tabs') : {};
+            })
+            .catch((err) => {});
+        // });
+    }
 
     onlyUnique(value, index, self) {
         return self.indexOf(value) === index;
@@ -71,6 +101,7 @@ class Login extends React.Component {
 
     // signs in
     signIn() {
+        this.setState({ isLoggingIn: true });
         try {
             var url = 'http://homexe.win/api/sanctum/token';
 
@@ -83,10 +114,24 @@ class Login extends React.Component {
                 if (xhr.readyState === 4) {
                     // console.log(xhr.status);
                     // console.log(xhr.responseText);
+                    var name = '';
+                    try {
+                        name = JSON.parse(xhr.responseText).user.name;
 
-                    let name = JSON.parse(xhr.responseText).user.name;
-                    this.props.updateName(name);
-                    this.props.navigation.navigate('Tabs');
+                        this.storeName(name);
+                        AsyncStorage.getItem(USER_KEY).then((res) => {});
+                        onSignIn();
+                        AsyncStorage.getItem(USER_KEY).then((res) => {});
+                        this.props.updateName(name);
+                        this.props.navigation.navigate('Tabs');
+                        this.setState({ isLoggingIn: false });
+                    } catch (e) {
+                        Alert.alert(
+                            'Whoops!',
+                            'Your login credentials were incorrect.',
+                        );
+                        this.setState({ isLoggingIn: false });
+                    }
                 }
             };
 
@@ -97,11 +142,36 @@ class Login extends React.Component {
                 this.state.loginPassword +
                 '", "device_name": "Homexe.win App"}';
 
-            console.log(data);
-
             xhr.send(data);
-        } catch {}
+        } catch {
+            // console.log('ERRRO');
+        }
     }
+
+    // ................................................................
+    // THE FOLLOWING FUNCTIONS ARE LOGIN/ASYNCSTORAGE RELATED FUNCTIONS
+
+    // stores the email into AsyncStorage
+    storeName = async (email) => {
+        try {
+            await AsyncStorage.setItem('name', name);
+        } catch (error) {}
+    };
+
+    // Gets the email from AsyncStorage
+    retrieveName = async () => {
+        try {
+            const name = await AsyncStorage.getItem('name');
+
+            if (name !== null) {
+                this.props.updateName(name);
+                // this.setState({
+                //     loginEmail: email,
+                //     name: this.convertToUserName(email),
+                // });
+            }
+        } catch (error) {}
+    };
 
     render() {
         return (
@@ -176,7 +246,13 @@ class Login extends React.Component {
                             <SelectButton
                                 style={{ backgroundColor: global.primaryColor }}
                             >
-                                <AddJobText>Log In</AddJobText>
+                                <AddJobText>
+                                    {this.state.isLoggingIn ? (
+                                        <ActivityIndicator color='white' />
+                                    ) : (
+                                        'Log In'
+                                    )}
+                                </AddJobText>
                             </SelectButton>
                         </TouchableOpacity>
                     </ModalButtonView>

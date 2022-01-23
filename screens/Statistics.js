@@ -17,7 +17,7 @@ import { connect } from 'react-redux';
 
 // Where we grab the redux name state
 function mapStateToProps(state) {
-    return { name: state.name };
+    return { calls: state.calls, appointments: state.appointments };
 }
 
 // Where we define the function to update redux name
@@ -36,35 +36,6 @@ Number.prototype.clamp = function (min, max) {
 };
 
 class Statistics extends React.Component {
-    state = {
-        calls: [],
-        appointments: [],
-    };
-
-    async componentDidMount() {
-        try {
-            await fetch('https://homexe.win/call/get')
-                .then((response) => response.json())
-                .then((data) =>
-                    this.setState({
-                        calls: data.filter((item) => {
-                            return item.user_name == this.props.name;
-                        }),
-                    }),
-                );
-
-            await fetch('https://homexe.win/appointment/get')
-                .then((response) => response.json())
-                .then((data) =>
-                    this.setState({
-                        appointments: data.filter((item) => {
-                            return item.user_name == this.props.name;
-                        }),
-                    }),
-                );
-        } catch {}
-    }
-
     // returns the maximum income this user has had in the past year
     returnMaximumHistoricalIncome(howManyToCutOff) {
         let incomes = [
@@ -94,29 +65,27 @@ class Statistics extends React.Component {
 
     // # of appointment with 100% signed contract
     returnNumberOfSignedContracts() {
-        return this.state.appointments.filter(
-            (appt) =>
-                appt.odds_of_conversion === '1' &&
-                appt.user_name == this.props.name,
+        return this.props.appointments.filter(
+            (appt) => appt.odds_of_conversion === '1',
         ).length;
     }
 
     // gives THIS USER'S the number of X made today
     returnSetOfToday(set) {
         return set.filter((item) => {
-            return item.user_name === this.props.name && this.wasToday(item);
+            return this.wasToday(item);
         }).length;
     }
     // gives THIS USER'S the number of X made today
     returnSetOfWeek(set) {
         return set.filter((item) => {
-            return item.user_name === this.props.name && this.wasWeek(item);
+            return this.wasWeek(item);
         }).length;
     }
     // gives THIS USER'S the number of X made today
     returnSetOfMonth(set) {
         return set.filter((item) => {
-            return item.user_name === this.props.name && this.wasMonth(item);
+            return this.wasMonth(item);
         }).length;
     }
 
@@ -153,15 +122,12 @@ class Statistics extends React.Component {
 
         try {
             return Math.abs(
-                this.state.calls.filter((call) => {
-                    return (
-                        call.user_name === this.props.name &&
-                        moment(call.created_at).isBefore(now)
-                    );
+                this.props.calls.filter((call) => {
+                    return moment(call.created_at).isBefore(now);
                 }).length / num_of_days,
             );
         } catch {
-            return Math.abs(this.state.calls.length / num_of_days);
+            return Math.abs(this.props.calls.length / num_of_days);
         }
     }
 
@@ -173,7 +139,7 @@ class Statistics extends React.Component {
 
         try {
             return Math.abs(
-                this.state.appointments.filter((appt) => {
+                this.props.appointments.filter((appt) => {
                     return (
                         appt.user_name === user.name &&
                         moment(appt.created_at).isBefore(now)
@@ -181,7 +147,7 @@ class Statistics extends React.Component {
                 }).length / num_of_days,
             );
         } catch {
-            return Math.abs(this.state.appointments.length / num_of_days);
+            return Math.abs(this.props.appointments.length / num_of_days);
         }
     }
 
@@ -191,16 +157,12 @@ class Statistics extends React.Component {
 
     // divides the calls by appointments, and if there are no appointments, returns 0
     returnConversionRate() {
-        let usersCalls = this.state.calls.filter(
-            (call) => call.user_name === this.props.name,
-        ).length;
-        let usersAppts = this.state.appointments.filter(
-            (appt) => appt.user_name === this.props.name,
-        ).length;
+        let usersCalls = this.props.calls.length;
+        let usersAppts = this.props.appointments.length;
         if (usersAppts === 0) return 0;
 
         var conversionRate = usersCalls / usersAppts;
-        if (this.state.appointments.length === 0) {
+        if (this.props.appointments.length === 0) {
             conversionRate = 0;
         }
 
@@ -244,13 +206,13 @@ class Statistics extends React.Component {
                         first={
                             <InfoBubble
                                 text='Calls This Week'
-                                value={this.returnSetOfWeek(this.state.calls)}
+                                value={this.returnSetOfWeek(this.props.calls)}
                             />
                         }
                         second={
                             <InfoBubble
                                 text='Calls This Month'
-                                value={this.returnSetOfMonth(this.state.calls)}
+                                value={this.returnSetOfMonth(this.props.calls)}
                             />
                         }
                         third={
@@ -268,7 +230,7 @@ class Statistics extends React.Component {
                             <InfoBubble
                                 text='Appts Today'
                                 value={this.returnSetOfToday(
-                                    this.state.appointments,
+                                    this.props.appointments,
                                 )}
                             />
                         }
@@ -276,7 +238,7 @@ class Statistics extends React.Component {
                             <InfoBubble
                                 text='Appts This Month'
                                 value={this.returnSetOfMonth(
-                                    this.state.appointments,
+                                    this.props.appointments,
                                 )}
                             />
                         }

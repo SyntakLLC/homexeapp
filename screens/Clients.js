@@ -12,23 +12,41 @@ import {
     Linking,
     Platform,
 } from 'react-native';
+import { connect } from 'react-redux';
+
+// Where we grab the redux name state
+function mapStateToProps(state) {
+    return {
+        name: state.name,
+        calls: state.calls,
+        appointments: state.appointments,
+        clients: state.clients,
+        listings: state.listings,
+    };
+}
+
+// Where we define the function to update redux name
+function mapDispatchToProps(dispatch) {
+    return {
+        updateName: (name) =>
+            dispatch({
+                type: 'UPDATE_NAME',
+                name,
+            }),
+    };
+}
 
 Number.prototype.clamp = function (min, max) {
     return this <= min ? min : this >= max ? max : this;
 };
 
-export default class Clients extends React.Component {
+class Clients extends React.Component {
     state = {
-        clients: [],
         phonePrefix: '',
         filter: 'All',
     };
 
     componentDidMount() {
-        fetch('https://homexe.win/client/get')
-            .then((response) => response.json())
-            .then((data) => this.setState({ clients: data }));
-
         if (Platform.OS !== 'android') {
             this.setState({ phonePrefix: 'telprompt:' });
         } else {
@@ -45,8 +63,22 @@ export default class Clients extends React.Component {
             />,
         );
 
-        for (let i = 0; i < this.state.clients.length; i++) {
-            let client = this.state.clients[i];
+        if (this.props.clients.length == 0) {
+            apptList.push(
+                <View
+                    style={{
+                        marginTop: 30,
+                        width: '100%',
+                        alignItems: 'center',
+                    }}
+                >
+                    <SmallestTitle text='You have no clients' />
+                </View>,
+            );
+        }
+
+        for (let i = 0; i < this.props.clients.length; i++) {
+            let client = this.props.clients[i];
             if (
                 client.status == this.state.filter ||
                 this.state.filter == 'All'
@@ -177,6 +209,8 @@ export default class Clients extends React.Component {
         );
     }
 }
+
+export default connect(mapStateToProps, mapDispatchToProps)(Clients);
 
 const RowView = (item) => (
     <View

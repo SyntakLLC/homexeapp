@@ -3,6 +3,7 @@ import {
     TouchableOpacity,
     SafeAreaView,
     Dimensions,
+    Linking,
     Text,
     Animated,
     Alert,
@@ -41,6 +42,11 @@ function mapDispatchToProps(dispatch) {
             dispatch({
                 type: 'UPDATE_NAME',
                 name,
+            }),
+        updateToken: (token) =>
+            dispatch({
+                type: 'UPDATE_TOKEN',
+                token,
             }),
     };
 }
@@ -114,9 +120,10 @@ class Login extends React.Component {
                 if (xhr.readyState === 4) {
                     // console.log(xhr.status);
                     // console.log(xhr.responseText);
-                    var name = '';
                     try {
-                        name = JSON.parse(xhr.responseText).user.name;
+                        var name = JSON.parse(xhr.responseText).user.name;
+                        var token = JSON.parse(xhr.responseText).token;
+                        this.storeToken(token);
 
                         this.storeName(name);
                         AsyncStorage.getItem(USER_KEY).then((res) => {});
@@ -152,9 +159,14 @@ class Login extends React.Component {
     // THE FOLLOWING FUNCTIONS ARE LOGIN/ASYNCSTORAGE RELATED FUNCTIONS
 
     // stores the email into AsyncStorage
-    storeName = async (email) => {
+    storeName = async (name) => {
         try {
             await AsyncStorage.setItem('name', name);
+        } catch (error) {}
+    };
+    storeToken = async (token) => {
+        try {
+            await AsyncStorage.setItem('token', token);
         } catch (error) {}
     };
 
@@ -185,7 +197,7 @@ class Login extends React.Component {
                     <ModalButtonView
                         style={{
                             width: 300,
-                            height: 280,
+                            height: 300,
                             padding: 20,
                             marginLeft: 0,
                             paddingTop: 40,
@@ -229,6 +241,18 @@ class Login extends React.Component {
                             }}
                         />
 
+                        {/* The forgot password button */}
+                        <TouchableOpacity
+                            style={{ margin: 5 }}
+                            onPress={() => {
+                                Linking.openURL('https://homexe.win/register');
+                            }}
+                        >
+                            <Subtitle style={{ color: global.primaryColor }}>
+                                Create Account
+                            </Subtitle>
+                        </TouchableOpacity>
+
                         {/* The actual log in/sign up button where it does it */}
                         <TouchableOpacity
                             onPress={() => {
@@ -260,7 +284,7 @@ class Login extends React.Component {
                     {/* The image logo on top for looks */}
                     <LoginLogo
                         source={{ uri: 'https://i.imgur.com/obvXOnI.gif' }}
-                        style={{ bottom: 350 }}
+                        style={{ bottom: 370 }}
                     />
                 </AnimatedModalView>
             </SafeAreaView>
@@ -354,6 +378,14 @@ const ModalButtonText = styled.Text`
 const ModalSubtitle = styled.Text`
     font-size: 16;
     color: black;
+    margin-left: 20;
+    margin-right: 20;
+    margin-top: 10;
+`;
+
+const Subtitle = styled.Text`
+    font-size: 16;
+    color: white;
     margin-left: 20;
     margin-right: 20;
     margin-top: 10;

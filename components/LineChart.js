@@ -16,7 +16,7 @@ import { connect } from 'react-redux';
 
 // Where we grab the redux name state
 function mapStateToProps(state) {
-    return { name: state.name };
+    return { calls: state.calls, appointments: state.appointments };
 }
 
 // Where we define the function to update redux name
@@ -31,39 +31,10 @@ function mapDispatchToProps(dispatch) {
 }
 
 class LineChartComponent extends React.Component {
-    state = {
-        calls: [],
-        appointments: [],
-    };
-
-    async componentDidMount() {
-        try {
-            await fetch('https://homexe.win/call/get')
-                .then((response) => response.json())
-                .then((data) =>
-                    this.setState({
-                        calls: data.filter((item) => {
-                            return item.user_name == this.props.name;
-                        }),
-                    }),
-                );
-
-            await fetch('https://homexe.win/appointment/get')
-                .then((response) => response.json())
-                .then((data) =>
-                    this.setState({
-                        appointments: data.filter((item) => {
-                            return item.user_name == this.props.name;
-                        }),
-                    }),
-                );
-        } catch {}
-    }
-
     renderDashboardData() {
         var dashboardData = [];
 
-        if (this.state.calls.length == 0) {
+        if (this.props.calls.length == 0) {
             dashboardData.push(
                 <View
                     style={{
@@ -170,15 +141,12 @@ class LineChartComponent extends React.Component {
 
         try {
             return Math.abs(
-                this.state.calls.filter((call) => {
-                    return (
-                        call.user_name === this.props.name &&
-                        moment(call.created_at).isBefore(now)
-                    );
+                this.props.calls.filter((call) => {
+                    return moment(call.created_at).isBefore(now);
                 }).length / num_of_days,
             );
         } catch {
-            return Math.abs(this.state.calls.length / num_of_days);
+            return Math.abs(this.props.calls.length / num_of_days);
         }
     }
 
@@ -190,7 +158,7 @@ class LineChartComponent extends React.Component {
 
         try {
             return Math.abs(
-                this.state.appointments.filter((appt) => {
+                this.props.appointments.filter((appt) => {
                     return (
                         appt.user_name === user.name &&
                         moment(appt.created_at).isBefore(now)
@@ -198,7 +166,7 @@ class LineChartComponent extends React.Component {
                 }).length / num_of_days,
             );
         } catch {
-            return Math.abs(this.state.appointments.length / num_of_days);
+            return Math.abs(this.props.appointments.length / num_of_days);
         }
     }
 

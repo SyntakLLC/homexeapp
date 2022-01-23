@@ -44,11 +44,11 @@ export default class Statistics extends React.Component {
             />,
         );
 
-        for (let i = 0; i < this.state.appointments.length; i++) {
+        for (let i = 0; i < this.props.appointments.length; i++) {
             apptList.push(
                 <TouchableOpacity
                     onPress={() => {
-                        let appointment = this.state.appointments[i];
+                        let appointment = this.props.appointments[i];
 
                         this.setState({ description: appointment.description });
                         this.setState({
@@ -92,26 +92,26 @@ export default class Statistics extends React.Component {
                 >
                     <DetailCard
                         address={
-                            this.state.appointments[i].location == ''
-                                ? this.state.appointments[i].title
-                                : this.state.appointments[i].location
+                            this.props.appointments[i].location == ''
+                                ? this.props.appointments[i].title
+                                : this.props.appointments[i].location
                         }
                         price={
-                            this.state.appointments[i].mls_price == null
+                            this.props.appointments[i].mls_price == null
                                 ? 'Price Unknown'
                                 : '$' +
                                   this.numberWithCommas(
-                                      this.state.appointments[i].mls_price,
+                                      this.props.appointments[i].mls_price,
                                   )
                         }
                         status={
-                            this.state.appointments[i].odds_of_conversion ==
+                            this.props.appointments[i].odds_of_conversion ==
                             null
                                 ? 'Active'
-                                : this.state.appointments[i]
+                                : this.props.appointments[i]
                                       .odds_of_conversion == 5
                                 ? 'Sold'
-                                : this.state.appointments[i]
+                                : this.props.appointments[i]
                                       .odds_of_conversion +
                                   '/5 odds of conversion'
                         }

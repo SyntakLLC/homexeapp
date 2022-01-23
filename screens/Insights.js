@@ -17,7 +17,13 @@ import { connect } from 'react-redux';
 
 // Where we grab the redux name state
 function mapStateToProps(state) {
-    return { name: state.name };
+    return {
+        name: state.name,
+        calls: state.calls,
+        appointments: state.appointments,
+        clients: state.clients,
+        listings: state.listings,
+    };
 }
 
 // Where we define the function to update redux name
@@ -37,70 +43,27 @@ Number.prototype.clamp = function (min, max) {
 
 class Insights extends React.Component {
     state = {
-        listings: [],
-        clients: [],
-        appointments: [],
-        calls: [],
         buyers: [],
         sellers: [],
     };
 
     componentDidMount() {
         try {
-            fetch('https://homexe.win/listing/get')
-                .then((response) => response.json())
-                .then((data) =>
-                    this.setState({
-                        listings: data.filter((listing) => {
-                            return listing.user_name == this.props.name;
-                        }),
+            this.setState({
+                buyers: this.props.clients.filter((client) => {
+                    return client.client_type == 'Buyer';
+                }),
+            }),
+                this.setState({
+                    sellers: this.props.clients.filter((client) => {
+                        return client.client_type == 'Listing';
                     }),
-                );
-
-            fetch('https://homexe.win/client/get')
-                .then((response) => response.json())
-                .then((data) => {
-                    this.setState({
-                        clients: data.filter((client) => {
-                            return client.user_name == this.props.name;
-                        }),
-                    }),
-                        this.setState({
-                            buyers: data.filter((client) => {
-                                return client.client_type == 'Buyer';
-                            }),
-                        }),
-                        this.setState({
-                            sellers: data.filter((client) => {
-                                return client.client_type == 'Listing';
-                            }),
-                        });
                 });
-
-            fetch('https://homexe.win/call/get')
-                .then((response) => response.json())
-                .then((data) =>
-                    this.setState({
-                        calls: data.filter((item) => {
-                            return item.user_name == this.props.name;
-                        }),
-                    }),
-                );
-
-            fetch('https://homexe.win/appointment/get')
-                .then((response) => response.json())
-                .then((data) =>
-                    this.setState({
-                        appointments: data.filter((item) => {
-                            return item.user_name == this.props.name;
-                        }),
-                    }),
-                );
         } catch {}
     }
 
     returnListingVolume(statusFilter) {
-        var filteredListings = this.state.listings.filter((listing) => {
+        var filteredListings = this.props.listings.filter((listing) => {
             return listing.status == statusFilter;
         });
 
@@ -142,7 +105,7 @@ class Insights extends React.Component {
 
     // # of appointment with 100% signed contract
     returnNumberOfSignedContracts() {
-        return this.state.appointments.filter(
+        return this.props.appointments.filter(
             (appt) =>
                 appt.odds_of_conversion === '1' &&
                 appt.user_name == this.props.name,
@@ -201,7 +164,7 @@ class Insights extends React.Component {
 
         try {
             return Math.abs(
-                this.state.calls.filter((call) => {
+                this.props.calls.filter((call) => {
                     return (
                         call.user_name === this.props.name &&
                         moment(call.created_at).isBefore(now)
@@ -209,7 +172,7 @@ class Insights extends React.Component {
                 }).length / num_of_days,
             );
         } catch {
-            return Math.abs(this.state.calls.length / num_of_days);
+            return Math.abs(this.props.calls.length / num_of_days);
         }
     }
 
@@ -221,7 +184,7 @@ class Insights extends React.Component {
 
         try {
             return Math.abs(
-                this.state.appointments.filter((appt) => {
+                this.props.appointments.filter((appt) => {
                     return (
                         appt.user_name === user.name &&
                         moment(appt.created_at).isBefore(now)
@@ -229,7 +192,7 @@ class Insights extends React.Component {
                 }).length / num_of_days,
             );
         } catch {
-            return Math.abs(this.state.appointments.length / num_of_days);
+            return Math.abs(this.props.appointments.length / num_of_days);
         }
     }
 
@@ -259,16 +222,16 @@ class Insights extends React.Component {
 
     // divides the calls by appointments, and if there are no appointments, returns 0
     returnConversionRate() {
-        let usersCalls = this.state.calls.filter(
+        let usersCalls = this.props.calls.filter(
             (call) => call.user_name === this.props.name,
         ).length;
-        let usersAppts = this.state.appointments.filter(
+        let usersAppts = this.props.appointments.filter(
             (appt) => appt.user_name === this.props.name,
         ).length;
         if (usersAppts === 0) return 0;
 
         var conversionRate = usersCalls / usersAppts;
-        if (this.state.appointments.length === 0) {
+        if (this.props.appointments.length === 0) {
             conversionRate = 0;
         }
 
@@ -401,8 +364,8 @@ class Insights extends React.Component {
                         second={
                             <InfoBubble
                                 text='Contacts'
-                                value={(this.state.clients.length / 50) * 100}
-                                actualValue={this.state.clients.length}
+                                value={(this.props.clients.length / 50) * 100}
+                                actualValue={this.props.clients.length}
                             />
                         }
                         third={

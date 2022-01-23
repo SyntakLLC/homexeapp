@@ -1,5 +1,11 @@
 import React from 'react';
-import { View, Dimensions, Platform, TouchableOpacity } from 'react-native';
+import {
+    View,
+    Dimensions,
+    Platform,
+    TouchableOpacity,
+    AsyncStorage,
+} from 'react-native';
 import {
     HomeSymbol,
     StatisticsSymbol,
@@ -43,10 +49,122 @@ function mapDispatchToProps(dispatch) {
                 type: 'UPDATE_NAME',
                 name,
             }),
+        updateCalls: (calls) =>
+            dispatch({
+                type: 'UPDATE_CALLS',
+                calls,
+            }),
+        updateAppointments: (appointments) =>
+            dispatch({
+                type: 'UPDATE_APPOINTMENTS',
+                appointments,
+            }),
+        updateClients: (clients) =>
+            dispatch({
+                type: 'UPDATE_CLIENTS',
+                clients,
+            }),
+        updateListings: (listings) =>
+            dispatch({
+                type: 'UPDATE_LISTINGS',
+                listings,
+            }),
     };
 }
 
 class Tabs extends React.Component {
+    async getCalls() {
+        const token = await AsyncStorage.getItem('token');
+        const name = await AsyncStorage.getItem('name');
+        var calls = [];
+        await fetch('https://homexe.win/call/get', {
+            headers: new Headers({
+                Authorization: 'Bearer ' + token,
+                'Content-Type': 'application/json',
+                Accept: 'application/json',
+            }),
+        })
+            .then((response) => response.json())
+            .then((data) => {
+                calls = data.filter((item) => {
+                    return item.user_name == name;
+                });
+
+                this.props.updateCalls(calls);
+            });
+    }
+
+    async getAppointments() {
+        const token = await AsyncStorage.getItem('token');
+        const name = await AsyncStorage.getItem('name');
+        var appts = [];
+        await fetch('https://homexe.win/appointment/get', {
+            headers: new Headers({
+                Authorization: 'Bearer ' + token,
+                'Content-Type': 'application/json',
+                Accept: 'application/json',
+            }),
+        })
+            .then((response) => response.json())
+            .then((data) => {
+                appts = data.filter((item) => {
+                    return item.user_name == name;
+                });
+
+                this.props.updateAppointments(appts);
+            });
+    }
+
+    async getClients() {
+        const token = await AsyncStorage.getItem('token');
+        const name = await AsyncStorage.getItem('name');
+        var clients = [];
+        await fetch('https://homexe.win/client/get', {
+            headers: new Headers({
+                Authorization: 'Bearer ' + token,
+                'Content-Type': 'application/json',
+                Accept: 'application/json',
+            }),
+        })
+            .then((response) => response.json())
+            .then((data) => {
+                clients = data.filter((item) => {
+                    return item.user_name == name;
+                });
+
+                this.props.updateClients(clients);
+                console.log(clients);
+            });
+    }
+
+    async getListings() {
+        const token = await AsyncStorage.getItem('token');
+        const name = await AsyncStorage.getItem('name');
+        var listings = [];
+        await fetch('https://homexe.win/listing/get', {
+            headers: new Headers({
+                Authorization: 'Bearer ' + token,
+                'Content-Type': 'application/json',
+                Accept: 'application/json',
+            }),
+        })
+            .then((response) => response.json())
+            .then((data) => {
+                listings = data.filter((item) => {
+                    return item.user_name == name;
+                });
+
+                this.props.updateListings(listings);
+            });
+    }
+
+    componentDidMount() {
+        this.getCalls();
+        this.getAppointments();
+        this.getClients();
+        this.getListings();
+    }
+
     render() {
         return (
             <Tab.Navigator
@@ -66,25 +184,7 @@ class Tabs extends React.Component {
     }
 }
 
-class App extends React.Component {
-    render() {
-        return (
-            <NavigationContainer>
-                <Stack.Navigator
-                    initialRouteName='Login'
-                    screenOptions={({ route }) => ({
-                        headerShown: false,
-                    })}
-                >
-                    <Stack.Screen name='Tabs' component={Tabs} />
-                    <Stack.Screen name='Login' component={Login} />
-                </Stack.Navigator>
-            </NavigationContainer>
-        );
-    }
-}
-
-export default connect(mapStateToProps, mapDispatchToProps)(App);
+export default connect(mapStateToProps, mapDispatchToProps)(Tabs);
 
 const TabBar = (item) => (
     <View

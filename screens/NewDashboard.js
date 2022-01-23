@@ -25,7 +25,11 @@ const onSignOut = () => AsyncStorage.removeItem(USER_KEY);
 
 // Where we grab the redux name state
 function mapStateToProps(state) {
-    return { name: state.name };
+    return {
+        name: state.name,
+        calls: state.calls,
+        appointments: state.appointments,
+    };
 }
 
 // Where we define the function to update redux name
@@ -49,34 +53,6 @@ class NewDashboard extends React.Component {
         loginEmail: '',
         loginPassword: '',
     };
-
-    componentDidMount() {
-        try {
-            this.refreshData();
-        } catch {}
-    }
-
-    async refreshData() {
-        await fetch('https://homexe.win/call/get')
-            .then((response) => response.json())
-            .then((data) =>
-                this.setState({
-                    calls: data.filter((item) => {
-                        return item.user_name == this.props.name;
-                    }),
-                }),
-            );
-
-        await fetch('https://homexe.win/appointment/get')
-            .then((response) => response.json())
-            .then((data) =>
-                this.setState({
-                    appointments: data.filter((item) => {
-                        return item.user_name == this.props.name;
-                    }),
-                }),
-            );
-    }
 
     // returns the maximum income this user has had in the past year
     returnMaximumHistoricalIncome(howManyToCutOff) {
@@ -107,29 +83,27 @@ class NewDashboard extends React.Component {
 
     // # of appointment with 100% signed contract
     returnNumberOfSignedContracts() {
-        return this.state.appointments.filter(
-            (appt) =>
-                appt.odds_of_conversion === '1' &&
-                appt.user_name == this.props.name,
+        return this.props.appointments.filter(
+            (appt) => appt.odds_of_conversion === '1',
         ).length;
     }
 
     // gives THIS USER'S the number of X made today
     returnSetOfToday(set) {
         return set.filter((item) => {
-            return item.user_name === this.props.name && this.wasToday(item);
+            return this.wasToday(item);
         }).length;
     }
     // gives THIS USER'S the number of X made today
     returnSetOfWeek(set) {
         return set.filter((item) => {
-            return item.user_name === this.props.name && this.wasWeek(item);
+            return this.wasWeek(item);
         }).length;
     }
     // gives THIS USER'S the number of X made today
     returnSetOfMonth(set) {
         return set.filter((item) => {
-            return item.user_name === this.props.name && this.wasMonth(item);
+            return this.wasMonth(item);
         }).length;
     }
 
@@ -166,15 +140,12 @@ class NewDashboard extends React.Component {
 
         try {
             return Math.abs(
-                this.state.calls.filter((call) => {
-                    return (
-                        call.user_name === this.props.name &&
-                        moment(call.created_at).isBefore(now)
-                    );
+                this.props.calls.filter((call) => {
+                    return moment(call.created_at).isBefore(now);
                 }).length / num_of_days,
             );
         } catch {
-            return Math.abs(this.state.calls.length / num_of_days);
+            return Math.abs(this.props.calls.length / num_of_days);
         }
     }
 
@@ -186,7 +157,7 @@ class NewDashboard extends React.Component {
 
         try {
             return Math.abs(
-                this.state.appointments.filter((appt) => {
+                this.props.appointments.filter((appt) => {
                     return (
                         appt.user_name === user.name &&
                         moment(appt.created_at).isBefore(now)
@@ -194,7 +165,7 @@ class NewDashboard extends React.Component {
                 }).length / num_of_days,
             );
         } catch {
-            return Math.abs(this.state.appointments.length / num_of_days);
+            return Math.abs(this.props.appointments.length / num_of_days);
         }
     }
 
@@ -362,7 +333,7 @@ class NewDashboard extends React.Component {
                                             second={
                                                 <AdaptiveSmallestTitle
                                                     text={this.returnSetOfToday(
-                                                        this.state.appointments,
+                                                        this.props.appointments,
                                                     )}
                                                 />
                                             }
@@ -376,7 +347,7 @@ class NewDashboard extends React.Component {
                                             second={
                                                 <AdaptiveSmallestTitle
                                                     text={this.returnSetOfWeek(
-                                                        this.state.appointments,
+                                                        this.props.appointments,
                                                     )}
                                                 />
                                             }
@@ -390,7 +361,7 @@ class NewDashboard extends React.Component {
                                             second={
                                                 <AdaptiveSmallestTitle
                                                     text={this.returnSetOfMonth(
-                                                        this.state.appointments,
+                                                        this.props.appointments,
                                                     )}
                                                 />
                                             }
@@ -432,7 +403,7 @@ class NewDashboard extends React.Component {
                                             second={
                                                 <AdaptiveSmallestTitle
                                                     text={this.returnSetOfToday(
-                                                        this.state.calls,
+                                                        this.props.calls,
                                                     )}
                                                 />
                                             }
@@ -446,7 +417,7 @@ class NewDashboard extends React.Component {
                                             second={
                                                 <AdaptiveSmallestTitle
                                                     text={this.returnSetOfWeek(
-                                                        this.state.calls,
+                                                        this.props.calls,
                                                     )}
                                                 />
                                             }
@@ -460,7 +431,7 @@ class NewDashboard extends React.Component {
                                             second={
                                                 <AdaptiveSmallestTitle
                                                     text={this.returnSetOfMonth(
-                                                        this.state.calls,
+                                                        this.props.calls,
                                                     )}
                                                 />
                                             }

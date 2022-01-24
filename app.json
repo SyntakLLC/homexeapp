@@ -2,7 +2,7 @@
     "expo": {
         "name": "Homexe.win",
         "slug": "homexeapp",
-        "version": "1.0.0",
+        "version": "1.0.6",
         "orientation": "portrait",
         "icon": "./assets/icon.png",
         "splash": {
@@ -17,12 +17,6 @@
         "ios": {
             "supportsTablet": true,
             "bundleIdentifier": "com.homexe.homexe"
-        },
-        "android": {
-            "adaptiveIcon": {
-                "foregroundImage": "./assets/splash.png",
-                "backgroundColor": "#FFFFFF"
-            }
         },
         "web": {
             "favicon": "./assets/splash.png"

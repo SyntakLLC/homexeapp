@@ -85,8 +85,9 @@ class Users extends React.Component {
         this.setState({
             currentlySwitchingUsers: true,
         });
-        setTimeout(() => {
+        setTimeout(async () => {
             this.props.updateName(name);
+            await AsyncStorage.setItem('name', name);
             this.setState({
                 currentlySwitchingUsers: false,
             });
@@ -110,10 +111,10 @@ class Users extends React.Component {
                         contentContainerStyle={{ paddingBottom: 120 }}
                     >
                         <View style={tailwind('mt-6 mb-4 flex-col')}>
-                            <Title text='Select a user' />
+                            <Title text={'Hi, ' + this.props.name} />
                         </View>
 
-                        <RowView
+                        {/*<RowView
                             first={
                                 <TouchableOpacity
                                     onPress={() => {
@@ -165,13 +166,13 @@ class Users extends React.Component {
                                     />
                                 </TouchableOpacity>
                             }
-                        />
+                        />*/}
 
                         <TouchableOpacity
                             style={{
                                 width: '100%',
                                 alignItems: 'center',
-                                marginTop: 50,
+                                marginTop: 20,
                             }}
                             onPress={() => {
                                 onSignOut();

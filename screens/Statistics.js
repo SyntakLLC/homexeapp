@@ -36,153 +36,6 @@ Number.prototype.clamp = function (min, max) {
 };
 
 class Statistics extends React.Component {
-    // returns the maximum income this user has had in the past year
-    returnMaximumHistoricalIncome(howManyToCutOff) {
-        let incomes = [
-            this.returnExpectedIncome(11),
-            this.returnExpectedIncome(10),
-            this.returnExpectedIncome(9),
-            this.returnExpectedIncome(8),
-            this.returnExpectedIncome(7),
-            this.returnExpectedIncome(6),
-            this.returnExpectedIncome(5),
-            this.returnExpectedIncome(4),
-            this.returnExpectedIncome(3),
-            this.returnExpectedIncome(2),
-            this.returnExpectedIncome(1),
-            this.returnExpectedIncome(0),
-        ];
-        return Math.max(...incomes.slice(howManyToCutOff));
-    }
-    // returns the number of days there was an element in the set
-    returnNumberOfSetDays(set) {
-        var datesArrays = [];
-        set.forEach((item) => {
-            datesArrays.push(moment(item.created_at).format('MM-DD-YYYY'));
-        });
-        return datesArrays.filter(this.onlyUnique).length;
-    }
-
-    // # of appointment with 100% signed contract
-    returnNumberOfSignedContracts() {
-        return this.props.appointments.filter(
-            (appt) => appt.odds_of_conversion === '1',
-        ).length;
-    }
-
-    // gives THIS USER'S the number of X made today
-    returnSetOfToday(set) {
-        return set.filter((item) => {
-            return this.wasToday(item);
-        }).length;
-    }
-    // gives THIS USER'S the number of X made today
-    returnSetOfWeek(set) {
-        return set.filter((item) => {
-            return this.wasWeek(item);
-        }).length;
-    }
-    // gives THIS USER'S the number of X made today
-    returnSetOfMonth(set) {
-        return set.filter((item) => {
-            return this.wasMonth(item);
-        }).length;
-    }
-
-    wasToday(item) {
-        return moment(item.created_at).isSame(moment(), 'day');
-    }
-
-    wasWeek(item) {
-        return moment(item.created_at).isSame(moment(), 'week');
-    }
-
-    wasMonth(item) {
-        return moment(item.created_at).isSame(moment(), 'month');
-    }
-
-    // to draw the chart, we want to show the change in expected income over time.
-    // so, we need to, for each month, show the expected income based on the prior months.
-    returnExpectedIncome(month) {
-        let expectedIncomeBasedOnCalls =
-            ((this.returnDailyCallCount(month) * 260) / 900) * 5000;
-        let expectedIncomeBasedOnAppts =
-            ((this.returnDailyApptCount(month) * 52) / 10) * 5000;
-        let expectedIncome =
-            expectedIncomeBasedOnCalls + expectedIncomeBasedOnAppts;
-        return expectedIncome <= 0 ? 0 : expectedIncome;
-    }
-
-    // calculates the user's average daily call count
-    returnDailyCallCount(month) {
-        let now = moment().subtract(month, 'months');
-
-        let your_date = moment('2021-11-28');
-        let num_of_days = now.diff(your_date, 'days') + 1;
-
-        try {
-            return Math.abs(
-                this.props.calls.filter((call) => {
-                    return moment(call.created_at).isBefore(now);
-                }).length / num_of_days,
-            );
-        } catch {
-            return Math.abs(this.props.calls.length / num_of_days);
-        }
-    }
-
-    // calculates the user's average daily appointment count
-    returnDailyApptCount(month, user) {
-        let now = moment().subtract(month, 'months');
-        let your_date = moment('2021-10-05');
-        let num_of_days = now.diff(your_date, 'days') + 1;
-
-        try {
-            return Math.abs(
-                this.props.appointments.filter((appt) => {
-                    return (
-                        appt.user_name === user.name &&
-                        moment(appt.created_at).isBefore(now)
-                    );
-                }).length / num_of_days,
-            );
-        } catch {
-            return Math.abs(this.props.appointments.length / num_of_days);
-        }
-    }
-
-    numberWithCommas(x) {
-        return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-    }
-
-    // divides the calls by appointments, and if there are no appointments, returns 0
-    returnConversionRate() {
-        let usersCalls = this.props.calls.length;
-        let usersAppts = this.props.appointments.length;
-        if (usersAppts === 0) return 0;
-
-        var conversionRate = usersCalls / usersAppts;
-        if (this.props.appointments.length === 0) {
-            conversionRate = 0;
-        }
-
-        return this.numberWithCommas(conversionRate.toFixed(2));
-    }
-
-    // rotates an array n times
-    arrayRotate(arr, reverse, n) {
-        if (reverse) {
-            for (let i = 0; i < n; i++) {
-                arr.unshift(arr.pop());
-            }
-        } else {
-            for (let i = 0; i < n; i++) {
-                arr.push(arr.shift());
-            }
-        }
-        return arr;
-    }
-
     render() {
         return (
             <SafeAreaView
@@ -206,21 +59,19 @@ class Statistics extends React.Component {
                         first={
                             <InfoBubble
                                 text='Calls This Week'
-                                value={this.returnSetOfWeek(this.props.calls)}
+                                value={this.props.calls.week.toFixed(2)}
                             />
                         }
                         second={
                             <InfoBubble
                                 text='Calls This Month'
-                                value={this.returnSetOfMonth(this.props.calls)}
+                                value={this.props.calls.month.toFixed(2)}
                             />
                         }
                         third={
                             <InfoBubble
                                 text='Avg Daily Calls'
-                                value={this.numberWithCommas(
-                                    this.returnDailyCallCount(0).toFixed(2),
-                                )}
+                                value={this.props.calls.average.toFixed(2)}
                             />
                         }
                     />
@@ -229,23 +80,21 @@ class Statistics extends React.Component {
                         first={
                             <InfoBubble
                                 text='Appts Today'
-                                value={this.returnSetOfToday(
-                                    this.props.appointments,
-                                )}
+                                value={this.props.appointments.day.toFixed(2)}
                             />
                         }
                         second={
                             <InfoBubble
                                 text='Appts This Month'
-                                value={this.returnSetOfMonth(
-                                    this.props.appointments,
-                                )}
+                                value={this.props.appointments.month.toFixed(2)}
                             />
                         }
                         third={
                             <InfoBubble
                                 text='Conversion Rate'
-                                value={this.returnConversionRate()}
+                                value={this.props.appointments.conversion_rate.toFixed(
+                                    2,
+                                )}
                             />
                         }
                     />

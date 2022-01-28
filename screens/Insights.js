@@ -23,6 +23,7 @@ function mapStateToProps(state) {
         appointments: state.appointments,
         clients: state.clients,
         listings: state.listings,
+        lineChartData: state.lineChartData,
     };
 }
 
@@ -47,23 +48,8 @@ class Insights extends React.Component {
         sellers: [],
     };
 
-    componentDidMount() {
-        try {
-            this.setState({
-                buyers: this.props.clients.filter((client) => {
-                    return client.client_type == 'Buyer';
-                }),
-            }),
-                this.setState({
-                    sellers: this.props.clients.filter((client) => {
-                        return client.client_type == 'Listing';
-                    }),
-                });
-        } catch {}
-    }
-
     returnListingVolume(statusFilter) {
-        var filteredListings = this.props.listings.filter((listing) => {
+        var filteredListings = this.props.clients.filter((listing) => {
             return listing.status == statusFilter;
         });
 
@@ -71,193 +57,13 @@ class Insights extends React.Component {
         else
             return filteredListings
                 .map((listing) => {
-                    return listing.price;
+                    return parseInt(listing.gci);
                 })
                 .reduce((accumulator, curr) => accumulator + curr);
     }
 
-    // returns the maximum income this user has had in the past year
-    returnMaximumHistoricalIncome(howManyToCutOff) {
-        let incomes = [
-            this.returnExpectedIncome(11),
-            this.returnExpectedIncome(10),
-            this.returnExpectedIncome(9),
-            this.returnExpectedIncome(8),
-            this.returnExpectedIncome(7),
-            this.returnExpectedIncome(6),
-            this.returnExpectedIncome(5),
-            this.returnExpectedIncome(4),
-            this.returnExpectedIncome(3),
-            this.returnExpectedIncome(2),
-            this.returnExpectedIncome(1),
-            this.returnExpectedIncome(0),
-        ];
-        return Math.max(...incomes.slice(howManyToCutOff));
-    }
-    // returns the number of days there was an element in the set
-    returnNumberOfSetDays(set) {
-        var datesArrays = [];
-        set.forEach((item) => {
-            datesArrays.push(moment(item.created_at).format('MM-DD-YYYY'));
-        });
-        return datesArrays.filter(this.onlyUnique).length;
-    }
-
-    // # of appointment with 100% signed contract
-    returnNumberOfSignedContracts() {
-        return this.props.appointments.filter(
-            (appt) =>
-                appt.odds_of_conversion === '1' &&
-                appt.user_name == this.props.name,
-        ).length;
-    }
-
-    // gives THIS USER'S the number of X made today
-    returnSetOfToday(set) {
-        return set.filter((item) => {
-            return item.user_name === this.props.name && this.wasToday(item);
-        }).length;
-    }
-    // gives THIS USER'S the number of X made today
-    returnSetOfWeek(set) {
-        return set.filter((item) => {
-            return item.user_name === this.props.name && this.wasWeek(item);
-        }).length;
-    }
-    // gives THIS USER'S the number of X made today
-    returnSetOfMonth(set) {
-        return set.filter((item) => {
-            return item.user_name === this.props.name && this.wasMonth(item);
-        }).length;
-    }
-
-    wasToday(item) {
-        return moment(item.created_at).isSame(moment(), 'day');
-    }
-
-    wasWeek(item) {
-        return moment(item.created_at).isSame(moment(), 'week');
-    }
-
-    wasMonth(item) {
-        return moment(item.created_at).isSame(moment(), 'month');
-    }
-
-    // to draw the chart, we want to show the change in expected income over time.
-    // so, we need to, for each month, show the expected income based on the prior months.
-    returnExpectedIncome(month) {
-        let expectedIncomeBasedOnCalls =
-            ((this.returnDailyCallCount(month) * 260) / 900) * 5000;
-        let expectedIncomeBasedOnAppts =
-            ((this.returnDailyApptCount(month) * 52) / 10) * 5000;
-        let expectedIncome =
-            expectedIncomeBasedOnCalls + expectedIncomeBasedOnAppts;
-        return expectedIncome <= 0 ? 0 : expectedIncome;
-    }
-
-    // calculates the user's average daily call count
-    returnDailyCallCount(month) {
-        let now = moment().subtract(month, 'months');
-
-        let your_date = moment('2021-11-28');
-        let num_of_days = now.diff(your_date, 'days') + 1;
-
-        try {
-            return Math.abs(
-                this.props.calls.filter((call) => {
-                    return (
-                        call.user_name === this.props.name &&
-                        moment(call.created_at).isBefore(now)
-                    );
-                }).length / num_of_days,
-            );
-        } catch {
-            return Math.abs(this.props.calls.length / num_of_days);
-        }
-    }
-
-    // calculates the user's average daily appointment count
-    returnDailyApptCount(month, user) {
-        let now = moment().subtract(month, 'months');
-        let your_date = moment('2021-10-05');
-        let num_of_days = now.diff(your_date, 'days') + 1;
-
-        try {
-            return Math.abs(
-                this.props.appointments.filter((appt) => {
-                    return (
-                        appt.user_name === user.name &&
-                        moment(appt.created_at).isBefore(now)
-                    );
-                }).length / num_of_days,
-            );
-        } catch {
-            return Math.abs(this.props.appointments.length / num_of_days);
-        }
-    }
-
-    // shifts the month list so the current month is first
-    returnMonthList() {
-        var months = [
-            'Jan',
-            'Feb',
-            'Mar',
-            'Apr',
-            'May',
-            'Jun',
-            'Jul',
-            'Aug',
-            'Sep',
-            'Oct',
-            'Nov',
-            'Dec',
-        ];
-
-        let now = moment().format('MMMM');
-        let n = months.indexOf(now.toString()) + 2;
-        months = this.arrayRotate(months, false, n);
-
-        return months;
-    }
-
-    // divides the calls by appointments, and if there are no appointments, returns 0
-    returnConversionRate() {
-        let usersCalls = this.props.calls.filter(
-            (call) => call.user_name === this.props.name,
-        ).length;
-        let usersAppts = this.props.appointments.filter(
-            (appt) => appt.user_name === this.props.name,
-        ).length;
-        if (usersAppts === 0) return 0;
-
-        var conversionRate = usersCalls / usersAppts;
-        if (this.props.appointments.length === 0) {
-            conversionRate = 0;
-        }
-
-        return this.numberWithCommas(conversionRate.toFixed(2));
-    }
-
-    // rotates an array n times
-    arrayRotate(arr, reverse, n) {
-        if (reverse) {
-            for (let i = 0; i < n; i++) {
-                arr.unshift(arr.pop());
-            }
-        } else {
-            for (let i = 0; i < n; i++) {
-                arr.push(arr.shift());
-            }
-        }
-        return arr;
-    }
-
     numberWithCommas(x) {
         return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-    }
-
-    onlyUnique(value, index, self) {
-        return self.indexOf(value) === index;
     }
 
     render() {
@@ -300,9 +106,10 @@ class Insights extends React.Component {
                                         text={
                                             '$' +
                                             this.numberWithCommas(
-                                                this.returnExpectedIncome(
-                                                    0,
-                                                ).toFixed(2),
+                                                this.props.lineChartData[
+                                                    this.props.lineChartData
+                                                        .length - 1
+                                                ].toFixed(2),
                                             )
                                         }
                                     />
@@ -336,7 +143,10 @@ class Insights extends React.Component {
                                 style={{
                                     width:
                                         100 *
-                                            (this.returnExpectedIncome(-2) /
+                                            (this.props.lineChartData[
+                                                this.props.lineChartData
+                                                    .length - 1
+                                            ] /
                                                 540000) +
                                         '%',
                                     height: 15,
@@ -352,13 +162,16 @@ class Insights extends React.Component {
                             <InfoBubble
                                 text='Closed Volume'
                                 value={
-                                    (this.returnListingVolume('Sold') /
+                                    (this.returnListingVolume('Closed') /
                                         4000000) *
                                     100
                                 }
-                                actualValue={this.numberWithCommas(
-                                    this.returnListingVolume('Sold').toFixed(2),
-                                )}
+                                actualValue={
+                                    '$' +
+                                    this.numberWithCommas(
+                                        this.returnListingVolume('Closed'),
+                                    )
+                                }
                             />
                         }
                         second={
@@ -372,15 +185,16 @@ class Insights extends React.Component {
                             <InfoBubble
                                 text='Contract Volume'
                                 value={(
-                                    (this.returnListingVolume('Pending') /
+                                    (this.returnListingVolume('Contract') /
                                         5000000) *
                                     100
                                 ).toFixed(2)}
-                                actualValue={this.numberWithCommas(
-                                    this.returnListingVolume('Pending').toFixed(
-                                        2,
-                                    ),
-                                )}
+                                actualValue={
+                                    '$' +
+                                    this.numberWithCommas(
+                                        this.returnListingVolume('Contract'),
+                                    )
+                                }
                             />
                         }
                         content={

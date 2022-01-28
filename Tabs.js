@@ -12,6 +12,8 @@ import {
     DealsSymbol,
     UsersSymbol,
     InsightsSymbol,
+    PlusSymbol,
+    FilledPlusSymbol,
     FilledInsightsSymbol,
     FilledHomeSymbol,
     FilledStatisticsSymbol,
@@ -29,6 +31,7 @@ import Users from './screens/Users';
 import NewDashboard from './screens/NewDashboard';
 import Insights from './screens/Insights';
 import Clients from './screens/Clients';
+import Plus from './screens/Plus';
 import Login from './screens/Login';
 import './global';
 import { connect } from 'react-redux';
@@ -69,6 +72,11 @@ function mapDispatchToProps(dispatch) {
                 type: 'UPDATE_LISTINGS',
                 listings,
             }),
+        updateLineChartData: (lineChartData) =>
+            dispatch({
+                type: 'UPDATE_LINE_CHART_DATA',
+                lineChartData,
+            }),
     };
 }
 
@@ -77,7 +85,7 @@ class Tabs extends React.Component {
         const token = await AsyncStorage.getItem('token');
         const name = await AsyncStorage.getItem('name');
         var calls = [];
-        await fetch('https://homexe.win/call/get', {
+        await fetch('https://homexe.win/api/call/get', {
             headers: new Headers({
                 Authorization: 'Bearer ' + token,
                 'Content-Type': 'application/json',
@@ -86,11 +94,7 @@ class Tabs extends React.Component {
         })
             .then((response) => response.json())
             .then((data) => {
-                calls = data.filter((item) => {
-                    return item.user_name == name;
-                });
-
-                this.props.updateCalls(calls);
+                this.props.updateCalls(data);
             });
     }
 
@@ -98,7 +102,7 @@ class Tabs extends React.Component {
         const token = await AsyncStorage.getItem('token');
         const name = await AsyncStorage.getItem('name');
         var appts = [];
-        await fetch('https://homexe.win/appointment/get', {
+        await fetch('https://homexe.win/api/appointment/get', {
             headers: new Headers({
                 Authorization: 'Bearer ' + token,
                 'Content-Type': 'application/json',
@@ -107,11 +111,7 @@ class Tabs extends React.Component {
         })
             .then((response) => response.json())
             .then((data) => {
-                appts = data.filter((item) => {
-                    return item.user_name == name;
-                });
-
-                this.props.updateAppointments(appts);
+                this.props.updateAppointments(data);
             });
     }
 
@@ -128,12 +128,7 @@ class Tabs extends React.Component {
         })
             .then((response) => response.json())
             .then((data) => {
-                clients = data.filter((item) => {
-                    return item.user_name == name;
-                });
-
-                this.props.updateClients(clients);
-                console.log(clients);
+                this.props.updateClients(data);
             });
     }
 
@@ -150,11 +145,24 @@ class Tabs extends React.Component {
         })
             .then((response) => response.json())
             .then((data) => {
-                listings = data.filter((item) => {
-                    return item.user_name == name;
-                });
+                this.props.updateListings(data);
+            });
+    }
 
-                this.props.updateListings(listings);
+    async getLineChartData() {
+        const token = await AsyncStorage.getItem('token');
+        const name = await AsyncStorage.getItem('name');
+        var listings = [];
+        await fetch('https://homexe.win/api/chart/get', {
+            headers: new Headers({
+                Authorization: 'Bearer ' + token,
+                'Content-Type': 'application/json',
+                Accept: 'application/json',
+            }),
+        })
+            .then((response) => response.json())
+            .then((data) => {
+                this.props.updateLineChartData(data);
             });
     }
 
@@ -163,6 +171,7 @@ class Tabs extends React.Component {
         this.getAppointments();
         this.getClients();
         this.getListings();
+        this.getLineChartData();
     }
 
     render() {
@@ -175,7 +184,7 @@ class Tabs extends React.Component {
                 })}
             >
                 <Tab.Screen name='Statistics' component={Statistics} />
-                <Tab.Screen name='Users' component={Users} />
+                <Tab.Screen name='Plus' component={Plus} />
                 <Tab.Screen name='Insights' component={Insights} />
                 <Tab.Screen name='NewDashboard' component={NewDashboard} />
                 <Tab.Screen name='Clients' component={Clients} />
@@ -225,6 +234,17 @@ const TabBar = (item) => (
                 width: '20%',
                 alignItems: 'center',
             }}
+            onPress={() => item.navigation.navigate('Plus')}
+        >
+            {returnPlusIcon(item)}
+        </TouchableOpacity>
+
+        <TouchableOpacity
+            style={{
+                display: 'flex',
+                width: '20%',
+                alignItems: 'center',
+            }}
             onPress={() => item.navigation.navigate('Insights')}
         >
             {returnInsightsIcon(item)}
@@ -241,16 +261,16 @@ const TabBar = (item) => (
             {returnDealsIcon(item)}
         </TouchableOpacity>
 
-        <TouchableOpacity
+        {/*<TouchableOpacity
             style={{
                 display: 'flex',
-                width: '20%',
+                width: '25%',
                 alignItems: 'center',
             }}
             onPress={() => item.navigation.navigate('Users')}
         >
             {returnUsersIcon(item)}
-        </TouchableOpacity>
+        </TouchableOpacity>*/}
     </View>
 );
 
@@ -389,6 +409,36 @@ function returnDealsIcon(item) {
     } else {
         return (
             <DealsSymbol width={35} height={35} color={global.secondaryColor} />
+        );
+    }
+}
+
+function returnPlusIcon(item) {
+    const { index, routes } = item.navigation.dangerouslyGetState();
+    const currentRoute = routes[index].name;
+
+    if (currentRoute == 'Plus') {
+        return (
+            <View>
+                <FilledPlusSymbol
+                    width={35}
+                    height={35}
+                    color={global.primaryColor}
+                />
+                <View
+                    style={{
+                        width: 6,
+                        height: 6,
+                        backgroundColor: global.primaryColor,
+                        borderRadius: 6,
+                        alignSelf: 'center',
+                    }}
+                />
+            </View>
+        );
+    } else {
+        return (
+            <PlusSymbol width={35} height={35} color={global.secondaryColor} />
         );
     }
 }

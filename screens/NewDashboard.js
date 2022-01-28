@@ -29,6 +29,7 @@ function mapStateToProps(state) {
         name: state.name,
         calls: state.calls,
         appointments: state.appointments,
+        lineChartData: state.lineChartData,
     };
 }
 
@@ -39,6 +40,26 @@ function mapDispatchToProps(dispatch) {
             dispatch({
                 type: 'UPDATE_NAME',
                 name,
+            }),
+        updateCalls: (calls) =>
+            dispatch({
+                type: 'UPDATE_CALLS',
+                calls,
+            }),
+        updateAppointments: (appointments) =>
+            dispatch({
+                type: 'UPDATE_APPOINTMENTS',
+                appointments,
+            }),
+        updateClients: (clients) =>
+            dispatch({
+                type: 'UPDATE_CLIENTS',
+                clients,
+            }),
+        updateListings: (listings) =>
+            dispatch({
+                type: 'UPDATE_LISTINGS',
+                listings,
             }),
     };
 }
@@ -54,186 +75,11 @@ class NewDashboard extends React.Component {
         loginPassword: '',
     };
 
-    // returns the maximum income this user has had in the past year
-    returnMaximumHistoricalIncome(howManyToCutOff) {
-        let incomes = [
-            this.returnExpectedIncome(11),
-            this.returnExpectedIncome(10),
-            this.returnExpectedIncome(9),
-            this.returnExpectedIncome(8),
-            this.returnExpectedIncome(7),
-            this.returnExpectedIncome(6),
-            this.returnExpectedIncome(5),
-            this.returnExpectedIncome(4),
-            this.returnExpectedIncome(3),
-            this.returnExpectedIncome(2),
-            this.returnExpectedIncome(1),
-            this.returnExpectedIncome(0),
-        ];
-        return Math.max(...incomes.slice(howManyToCutOff));
-    }
-    // returns the number of days there was an element in the set
-    returnNumberOfSetDays(set) {
-        var datesArrays = [];
-        set.forEach((item) => {
-            datesArrays.push(moment(item.created_at).format('MM-DD-YYYY'));
-        });
-        return datesArrays.filter(this.onlyUnique).length;
-    }
-
-    // # of appointment with 100% signed contract
-    returnNumberOfSignedContracts() {
-        return this.props.appointments.filter(
-            (appt) => appt.odds_of_conversion === '1',
-        ).length;
-    }
-
-    // gives THIS USER'S the number of X made today
-    returnSetOfToday(set) {
-        return set.filter((item) => {
-            return this.wasToday(item);
-        }).length;
-    }
-    // gives THIS USER'S the number of X made today
-    returnSetOfWeek(set) {
-        return set.filter((item) => {
-            return this.wasWeek(item);
-        }).length;
-    }
-    // gives THIS USER'S the number of X made today
-    returnSetOfMonth(set) {
-        return set.filter((item) => {
-            return this.wasMonth(item);
-        }).length;
-    }
-
-    wasToday(item) {
-        return moment(item.created_at).isSame(moment(), 'day');
-    }
-
-    wasWeek(item) {
-        return moment(item.created_at).isSame(moment(), 'week');
-    }
-
-    wasMonth(item) {
-        return moment(item.created_at).isSame(moment(), 'month');
-    }
-
-    // to draw the chart, we want to show the change in expected income over time.
-    // so, we need to, for each month, show the expected income based on the prior months.
-    returnExpectedIncome(month) {
-        let expectedIncomeBasedOnCalls =
-            ((this.returnDailyCallCount(month) * 260) / 900) * 5000;
-        let expectedIncomeBasedOnAppts =
-            ((this.returnDailyApptCount(month) * 52) / 10) * 5000;
-        let expectedIncome =
-            expectedIncomeBasedOnCalls + expectedIncomeBasedOnAppts;
-        return expectedIncome <= 0 ? 0 : expectedIncome;
-    }
-
-    // calculates the user's average daily call count
-    returnDailyCallCount(month) {
-        let now = moment().subtract(month, 'months');
-
-        let your_date = moment('2021-11-28');
-        let num_of_days = now.diff(your_date, 'days') + 1;
-
-        try {
-            return Math.abs(
-                this.props.calls.filter((call) => {
-                    return moment(call.created_at).isBefore(now);
-                }).length / num_of_days,
-            );
-        } catch {
-            return Math.abs(this.props.calls.length / num_of_days);
-        }
-    }
-
-    // calculates the user's average daily appointment count
-    returnDailyApptCount(month, user) {
-        let now = moment().subtract(month, 'months');
-        let your_date = moment('2021-10-05');
-        let num_of_days = now.diff(your_date, 'days') + 1;
-
-        try {
-            return Math.abs(
-                this.props.appointments.filter((appt) => {
-                    return (
-                        appt.user_name === user.name &&
-                        moment(appt.created_at).isBefore(now)
-                    );
-                }).length / num_of_days,
-            );
-        } catch {
-            return Math.abs(this.props.appointments.length / num_of_days);
-        }
-    }
-
-    onlyUnique(value, index, self) {
-        return self.indexOf(value) === index;
-    }
-
-    // opens the login modal
-    openModal() {
-        this.setState({
-            pickerOpen: true,
-        });
-
-        Animated.spring(this.state.loginModalTop, {
-            toValue: -550,
-            duration: 10000,
-            useNativeDriver: false,
-        }).start();
-    }
-
-    // CLOSES the login modal
-    closeModal() {
-        this.setState({
-            pickerOpen: false,
-        });
-
-        Animated.spring(this.state.loginModalTop, {
-            toValue: -global.screenHeight + 800,
-            duration: 10000,
-            useNativeDriver: false,
-        }).start();
-    }
-
-    // signs in
-    signIn() {
-        try {
-            var url = 'http://homexe.win/api/sanctum/token';
-
-            var xhr = new XMLHttpRequest();
-            xhr.open('POST', url);
-
-            xhr.setRequestHeader('Content-Type', 'application/json');
-
-            xhr.onreadystatechange = () => {
-                if (xhr.readyState === 4) {
-                    // console.log(xhr.status);
-                    // console.log(xhr.responseText);
-
-                    let name = JSON.parse(xhr.responseText).user.name;
-                    this.props.updateName(name);
-
-                    this.closeModal();
-                    this.setState({ hasLoggedIn: true });
-                    this.refreshData();
-                }
-            };
-
-            var data =
-                '{"email": "' +
-                this.state.loginEmail +
-                '", "password": "' +
-                this.state.loginPassword +
-                '", "device_name": "Homexe.win App"}';
-
-            console.log(data);
-
-            xhr.send(data);
-        } catch {}
+    emptyRedux() {
+        this.props.updateCalls([]);
+        this.props.updateAppointments([]);
+        this.props.updateListings([]);
+        this.props.updateClients([]);
     }
 
     render() {
@@ -281,15 +127,29 @@ class NewDashboard extends React.Component {
                                                 data={[
                                                     {
                                                         value:
-                                                            this.returnExpectedIncome() /
-                                                            this.returnMaximumHistoricalIncome(
-                                                                0,
+                                                            this.props
+                                                                .lineChartData[
+                                                                this.props
+                                                                    .lineChartData
+                                                                    .length - 1
+                                                            ] /
+                                                            Math.max(
+                                                                ...this.props
+                                                                    .lineChartData,
                                                             ),
                                                         color:
-                                                            this.returnExpectedIncome() >
-                                                            this.returnMaximumHistoricalIncome(
-                                                                0,
-                                                            )
+                                                            this.props
+                                                                .lineChartData[
+                                                                this.props
+                                                                    .lineChartData
+                                                                    .length - 1
+                                                            ] /
+                                                                Math.max(
+                                                                    ...this
+                                                                        .props
+                                                                        .lineChartData,
+                                                                ) >=
+                                                            0.5
                                                                 ? global.greenColor
                                                                 : global.redColor,
                                                     },
@@ -304,12 +164,15 @@ class NewDashboard extends React.Component {
                                             <SmallestTitle
                                                 text={
                                                     (
-                                                        ((this.returnExpectedIncome() -
-                                                            this.returnMaximumHistoricalIncome(
-                                                                0,
-                                                            )) /
-                                                            this.returnMaximumHistoricalIncome(
-                                                                0,
+                                                        (this.props
+                                                            .lineChartData[
+                                                            this.props
+                                                                .lineChartData
+                                                                .length - 1
+                                                        ] /
+                                                            Math.max(
+                                                                ...this.props
+                                                                    .lineChartData,
                                                             )) *
                                                         100
                                                     ).toFixed(0) + '%'
@@ -332,9 +195,10 @@ class NewDashboard extends React.Component {
                                             }
                                             second={
                                                 <AdaptiveSmallestTitle
-                                                    text={this.returnSetOfToday(
-                                                        this.props.appointments,
-                                                    )}
+                                                    text={
+                                                        this.props.appointments
+                                                            .day
+                                                    }
                                                 />
                                             }
                                         />
@@ -346,9 +210,10 @@ class NewDashboard extends React.Component {
                                             }
                                             second={
                                                 <AdaptiveSmallestTitle
-                                                    text={this.returnSetOfWeek(
-                                                        this.props.appointments,
-                                                    )}
+                                                    text={
+                                                        this.props.appointments
+                                                            .week
+                                                    }
                                                 />
                                             }
                                         />
@@ -360,9 +225,10 @@ class NewDashboard extends React.Component {
                                             }
                                             second={
                                                 <AdaptiveSmallestTitle
-                                                    text={this.returnSetOfMonth(
-                                                        this.props.appointments,
-                                                    )}
+                                                    text={
+                                                        this.props.appointments
+                                                            .month
+                                                    }
                                                 />
                                             }
                                         />
@@ -402,9 +268,7 @@ class NewDashboard extends React.Component {
                                             }
                                             second={
                                                 <AdaptiveSmallestTitle
-                                                    text={this.returnSetOfToday(
-                                                        this.props.calls,
-                                                    )}
+                                                    text={this.props.calls.day}
                                                 />
                                             }
                                         />
@@ -416,9 +280,7 @@ class NewDashboard extends React.Component {
                                             }
                                             second={
                                                 <AdaptiveSmallestTitle
-                                                    text={this.returnSetOfWeek(
-                                                        this.props.calls,
-                                                    )}
+                                                    text={this.props.calls.week}
                                                 />
                                             }
                                         />
@@ -430,9 +292,9 @@ class NewDashboard extends React.Component {
                                             }
                                             second={
                                                 <AdaptiveSmallestTitle
-                                                    text={this.returnSetOfMonth(
-                                                        this.props.calls,
-                                                    )}
+                                                    text={
+                                                        this.props.calls.month
+                                                    }
                                                 />
                                             }
                                         />
@@ -455,6 +317,24 @@ class NewDashboard extends React.Component {
                             />
                         }
                     />
+
+                    <TouchableOpacity
+                        style={{
+                            width: '100%',
+                            alignItems: 'center',
+                            marginTop: 20,
+                        }}
+                        onPress={() => {
+                            onSignOut();
+                            // this.emptyRedux();
+                            this.props.navigation.navigate('Login');
+                        }}
+                    >
+                        <LogoutButton
+                            reduxName={this.props.name}
+                            text='Logout'
+                        />
+                    </TouchableOpacity>
                 </ScrollView>
             </SafeAreaView>
         );
@@ -568,158 +448,20 @@ const DetailCard = (item) => (
     </View>
 );
 
-const NamePickerOverlay = (item) => (
-    <AnimatedModalView
+const LogoutButton = (item) => (
+    <View
         style={{
-            top: item.top,
+            width: Dimensions.get('window').width / 2 - 20,
+            borderRadius: 200,
+            minHeight: 50,
+            borderColor: global.primaryColor,
+            borderWidth: 2,
+            backgroundColor: 'white',
+            justifyContent: 'center',
+            marginBottom: 10,
+            alignItems: 'center',
         }}
     >
-        {/* The Background */}
-        <ModalButtonView
-            style={{
-                width: 300,
-                height: 280,
-                padding: 20,
-                marginLeft: 0,
-                paddingTop: 40,
-            }}
-        >
-            {/* The Title where it says login or signup */}
-            <ModalButtonText
-                style={{ marginLeft: 0, color: global.primaryColor }}
-            >
-                {item.loginOrSignup == 'Login' ? 'Login' : 'Sign Up'}
-            </ModalButtonText>
-
-            {/* The 2 or 4 text inputs depending on if it's logging in or signing up */}
-            <LoginInput
-                style={{
-                    backgroundColor: global.grayColor,
-                }}
-                placeholder='EMAIL'
-                fontWeight='bold'
-                autoCorrect={false}
-                placeholderTextColor='#11182750'
-                onChangeText={(val) => {
-                    item.updateLoginEmail(val);
-                }}
-            />
-            <LoginInput
-                style={{
-                    backgroundColor: global.grayColor,
-                }}
-                placeholder='PASSWORD'
-                fontWeight='bold'
-                blurOnSubmit={false}
-                onSubmitEditing={() => Keyboard.dismiss()}
-                secureTextEntry={true}
-                placeholderTextColor='#11182750'
-                onChangeText={(val) => {
-                    item.updateLoginPassword(val);
-                }}
-            />
-
-            {/* The actual log in/sign up button where it does it */}
-            <TouchableOpacity
-                onPress={() => {
-                    item.signIn();
-                }}
-                style={{
-                    // bottom: '4%',
-                    top: 20,
-                    height: 40,
-                    width: '100%',
-                    alignSelf: 'center',
-                    marginLeft: 16,
-                }}
-            >
-                <SelectButton style={{ backgroundColor: global.primaryColor }}>
-                    <AddJobText>Log In</AddJobText>
-                </SelectButton>
-            </TouchableOpacity>
-        </ModalButtonView>
-
-        {/* The image logo on top for looks */}
-        <LoginLogo
-            source={{ uri: 'https://i.imgur.com/obvXOnI.gif' }}
-            style={{ bottom: 350 }}
-        />
-    </AnimatedModalView>
+        <SmallerTitle reduxName={item.reduxName} text={item.text} />
+    </View>
 );
-
-const LoginLogo = styled.Image`
-    width: 80px;
-    height: 80px;
-    bottom: 420px;
-    border-radius: 20px;
-    overflow: hidden;
-    border-color: #ffffff60;
-    border-width: 0.5px;
-    /* box-shadow: 0px 0px 20px rgba(0, 0, 0, 1); */
-`;
-
-const ModalView = styled.View`
-    flex: 1;
-    align-items: center;
-    justify-content: flex-start;
-    box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.1);
-    z-index: 50;
-`;
-
-const AnimatedModalView = Animated.createAnimatedComponent(ModalView);
-
-const LoginInput = styled.TextInput`
-    height: 40px;
-    border-radius: 20px;
-    background-color: rgb(230, 230, 230);
-    width: 90%;
-    padding-left: 20px;
-    margin-top: 10px;
-    color: #111827;
-`;
-
-const SelectButton = styled.View`
-    height: 50px;
-    width: 94%;
-    flex: 1;
-    color: white;
-    align-items: center;
-    justify-content: center;
-    border-radius: 10px;
-`;
-
-const AddJobText = styled.Text`
-    font-weight: 700;
-    font-size: 17px;
-    color: white;
-    text-align: center;
-    line-height: 22px;
-`;
-
-const ModalButtonView = styled.View`
-    width: 90%;
-    min-height: 120;
-    margin-left: 5%;
-    border-radius: 15;
-    background-color: rgb(255, 255, 255);
-    align-items: center;
-    margin-bottom: 20;
-    overflow: hidden;
-    box-shadow: 5px 5px 10px black;
-`;
-
-const ModalButtonText = styled.Text`
-    font-size: 25;
-    font-weight: 600;
-    color: black;
-    margin-left: 20;
-    margin-bottom: 10;
-`;
-
-const ModalSubtitle = styled.Text`
-    font-size: 16;
-    color: black;
-    margin-left: 20;
-    margin-right: 20;
-    margin-top: 10;
-`;

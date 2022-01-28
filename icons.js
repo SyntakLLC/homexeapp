@@ -313,3 +313,41 @@ export function FilledDealsSymbol(props) {
         </Svg>
     );
 }
+
+export function PlusSymbol(props) {
+    return (
+        <Svg
+            xmlns='http://www.w3.org/2000/svg'
+            className='h-6 w-6'
+            fill='none'
+            viewBox='0 0 24 24'
+            stroke='currentColor'
+            {...props}
+        >
+            <Path
+                strokeLinecap='round'
+                strokeLinejoin='round'
+                strokeWidth={2}
+                d='M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0z'
+            />
+        </Svg>
+    );
+}
+
+export function FilledPlusSymbol(props) {
+    return (
+        <Svg
+            xmlns='http://www.w3.org/2000/svg'
+            className='h-5 w-5'
+            viewBox='0 0 20 20'
+            fill='currentColor'
+            {...props}
+        >
+            <Path
+                fillRule='evenodd'
+                d='M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16zm1-11a1 1 0 1 0-2 0v2H7a1 1 0 1 0 0 2h2v2a1 1 0 1 0 2 0v-2h2a1 1 0 1 0 0-2h-2V7z'
+                clipRule='evenodd'
+            />
+        </Svg>
+    );
+}

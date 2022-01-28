@@ -90,7 +90,7 @@ class Clients extends React.Component {
                         clientType={client.client_type}
                         gci={client.gci}
                         email={client.email}
-                        phone={client.phone}
+                        url={this.state.phonePrefix + client.phone}
                     />,
                 );
             }
@@ -335,7 +335,7 @@ const DetailCard = (item) => (
 
                         <SecondaryTitle text={item.clientType} />
 
-                        <SmallestTitle text={'GCI: ' + item.gci + '%'} />
+                        <SmallestTitle text={'$' + item.gci} />
                     </View>
 
                     <RowView
@@ -359,11 +359,7 @@ const DetailCard = (item) => (
                         }
                         second={
                             <TouchableOpacity
-                                onPress={() =>
-                                    Linking.openURL(
-                                        this.state.phonePrefix + item.phone,
-                                    )
-                                }
+                                onPress={() => Linking.openURL(item.url)}
                                 style={{
                                     padding: 5,
                                     borderRadius: 30,

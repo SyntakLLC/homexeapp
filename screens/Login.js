@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { connect } from 'react-redux';
 import styled from 'styled-components';
+import * as WebBrowser from 'expo-web-browser';
 
 // AsyncStorage stuff regarding the login status:
 const USER_KEY = 'auth-key-csv';
@@ -197,7 +198,7 @@ class Login extends React.Component {
                     <ModalButtonView
                         style={{
                             width: 300,
-                            height: 300,
+                            height: 270,
                             padding: 20,
                             marginLeft: 0,
                             paddingTop: 40,
@@ -241,17 +242,19 @@ class Login extends React.Component {
                             }}
                         />
 
-                        {/* The forgot password button */}
+                        {/* The forgot password button
                         <TouchableOpacity
                             style={{ margin: 5 }}
                             onPress={() => {
-                                Linking.openURL('https://homexe.win/register');
+                                WebBrowser.openBroswerAsync(
+                                    'https://homexe.win/register',
+                                );
                             }}
                         >
                             <Subtitle style={{ color: global.primaryColor }}>
                                 Create Account
                             </Subtitle>
-                        </TouchableOpacity>
+                        </TouchableOpacity> */}
 
                         {/* The actual log in/sign up button where it does it */}
                         <TouchableOpacity
@@ -284,7 +287,7 @@ class Login extends React.Component {
                     {/* The image logo on top for looks */}
                     <LoginLogo
                         source={{ uri: 'https://i.imgur.com/obvXOnI.gif' }}
-                        style={{ bottom: 370 }}
+                        style={{ bottom: 350 }}
                     />
                 </AnimatedModalView>
             </SafeAreaView>

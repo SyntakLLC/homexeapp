@@ -16,7 +16,11 @@ import { connect } from 'react-redux';
 
 // Where we grab the redux name state
 function mapStateToProps(state) {
-    return { calls: state.calls, appointments: state.appointments };
+    return {
+        calls: state.calls,
+        appointments: state.appointments,
+        lineChartData: state.lineChartData,
+    };
 }
 
 // Where we define the function to update redux name
@@ -34,7 +38,7 @@ class LineChartComponent extends React.Component {
     renderDashboardData() {
         var dashboardData = [];
 
-        if (this.props.calls.length == 0) {
+        if (this.props.lineChartData.length == 0) {
             dashboardData.push(
                 <View
                     style={{
@@ -64,25 +68,14 @@ class LineChartComponent extends React.Component {
                             legend: [
                                 'Estimated Income: ' +
                                     this.numberWithCommas(
-                                        this.returnExpectedIncome(0).toFixed(2),
+                                        this.props.lineChartData[
+                                            this.props.lineChartData.length - 1
+                                        ].toFixed(2),
                                     ),
                             ],
                             datasets: [
                                 {
-                                    data: [
-                                        this.returnExpectedIncome(11),
-                                        this.returnExpectedIncome(10),
-                                        this.returnExpectedIncome(9),
-                                        this.returnExpectedIncome(8),
-                                        this.returnExpectedIncome(7),
-                                        this.returnExpectedIncome(6),
-                                        this.returnExpectedIncome(5),
-                                        this.returnExpectedIncome(4),
-                                        this.returnExpectedIncome(3),
-                                        this.returnExpectedIncome(2),
-                                        this.returnExpectedIncome(1),
-                                        this.returnExpectedIncome(0),
-                                    ],
+                                    data: this.props.lineChartData,
                                 },
                             ],
                         }}
@@ -118,56 +111,6 @@ class LineChartComponent extends React.Component {
         }
 
         return <View>{dashboardData}</View>;
-    }
-
-    // to draw the chart, we want to show the change in expected income over time.
-    // so, we need to, for each month, show the expected income based on the prior months.
-    returnExpectedIncome(month) {
-        let expectedIncomeBasedOnCalls =
-            ((this.returnDailyCallCount(month) * 260) / 900) * 5000;
-        let expectedIncomeBasedOnAppts =
-            ((this.returnDailyApptCount(month) * 52) / 10) * 5000;
-        let expectedIncome =
-            expectedIncomeBasedOnCalls + expectedIncomeBasedOnAppts;
-        return expectedIncome <= 0 ? 0 : expectedIncome;
-    }
-
-    // calculates the user's average daily call count
-    returnDailyCallCount(month) {
-        let now = moment().subtract(month, 'months');
-
-        let your_date = moment('2021-11-28');
-        let num_of_days = now.diff(your_date, 'days') + 1;
-
-        try {
-            return Math.abs(
-                this.props.calls.filter((call) => {
-                    return moment(call.created_at).isBefore(now);
-                }).length / num_of_days,
-            );
-        } catch {
-            return Math.abs(this.props.calls.length / num_of_days);
-        }
-    }
-
-    // calculates the user's average daily appointment count
-    returnDailyApptCount(month, user) {
-        let now = moment().subtract(month, 'months');
-        let your_date = moment('2021-10-05');
-        let num_of_days = now.diff(your_date, 'days') + 1;
-
-        try {
-            return Math.abs(
-                this.props.appointments.filter((appt) => {
-                    return (
-                        appt.user_name === user.name &&
-                        moment(appt.created_at).isBefore(now)
-                    );
-                }).length / num_of_days,
-            );
-        } catch {
-            return Math.abs(this.props.appointments.length / num_of_days);
-        }
     }
 
     // shifts the month list so the current month is first

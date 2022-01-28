@@ -3,8 +3,10 @@ import './global';
 import { createStore } from 'redux';
 import { Provider } from 'react-redux';
 import Home from './Home';
-import { LogBox } from 'react-native';
+import { LogBox, StatusBar } from 'react-native';
 LogBox.ignoreAllLogs(); //Ignore all log notifications
+
+// var SafariView = require('react-native-safari-view');
 
 // REDUX INITIAL STATES:
 const initialState = {
@@ -14,6 +16,7 @@ const initialState = {
     appointments: [],
     listings: [],
     clients: [],
+    lineChartData: [],
 };
 
 // The Redux change state functions
@@ -31,6 +34,8 @@ const reducer = (state = initialState, action) => {
             return { ...state, clients: action.clients };
         case 'UPDATE_LISTINGS':
             return { ...state, listings: action.listings };
+        case 'UPDATE_LINE_CHART_DATA':
+            return { ...state, lineChartData: action.lineChartData };
         default:
             return state;
     }
@@ -38,6 +43,12 @@ const reducer = (state = initialState, action) => {
 const store = createStore(reducer);
 
 export default class App extends React.Component {
+    componentDidMount() {
+        if (Platform.OS == 'ios') {
+            StatusBar.setBarStyle('dark-content', true);
+        }
+    }
+
     render() {
         return (
             <Provider store={store}>

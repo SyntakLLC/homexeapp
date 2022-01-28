@@ -2,11 +2,10 @@
     "expo": {
         "name": "Homexe.win",
         "slug": "homexeapp",
-        "version": "1.0.6",
+        "version": "2.0.3",
         "orientation": "portrait",
         "icon": "./assets/icon.png",
         "splash": {
-            "image": "./assets/splash.png",
             "resizeMode": "contain",
             "backgroundColor": "#ffffff"
         },

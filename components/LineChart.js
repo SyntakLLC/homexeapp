@@ -87,7 +87,7 @@ class LineChartComponent extends React.Component {
                             backgroundColor: global.chartColor,
                             backgroundGradientFrom: global.chartColor,
                             backgroundGradientTo: global.chartColor,
-                            decimalPlaces: 2, // optional, defaults to 2dp
+                            decimalPlaces: 0, // optional, defaults to 2dp
                             color: (opacity = 1) =>
                                 `rgba(29, 79, 202, ${opacity})`,
                             labelColor: (opacity = 1) =>

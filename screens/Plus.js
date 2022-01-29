@@ -47,6 +47,7 @@ class Plus extends React.Component {
     state = {
         name: '',
         phoneNumber: '',
+        closingDate: '',
         email: '',
         status: 'Select Status',
         clientType: 'Select Client Type',
@@ -54,32 +55,33 @@ class Plus extends React.Component {
         salesPrice: 0,
         commission: 0,
         capped: false,
+        address: '',
     };
 
     async addClient() {
         if (this.state.name == '') {
             Alert.alert('Hold on!', "Please fill out the client's name");
             return null;
-        } else if (this.state.phoneNumber == '') {
-            Alert.alert(
-                'Hold on!',
-                "Please fill out the client's phone number",
-            );
-            return null;
-        } else if (this.state.email == '') {
-            Alert.alert('Hold on!', "Please fill out the client's email");
-            return null;
-        } else if (this.state.salesPrice == 0) {
-            Alert.alert('Hold on!', 'Please fill out the sales price');
-            return null;
-        } else if (this.state.commission == 0) {
-            Alert.alert('Hold on!', 'Please fill out the commission');
+        } else if (this.state.address == '') {
+            Alert.alert('Hold on!', "Please fill out the client's address");
             return null;
         } else if (this.state.clientType == 'Select Client Type') {
             Alert.alert('Hold on!', 'Please fill out the client type');
             return null;
         } else if (this.state.status == 'Select Status') {
             Alert.alert('Hold on!', "Please fill out the client's status");
+            return null;
+        } else if (
+            this.state.status == 'Contract' &&
+            this.state.closingDate == ''
+        ) {
+            Alert.alert('Hold on!', 'Please fill out the closing date');
+            return null;
+        } else if (this.state.salesPrice == 0) {
+            Alert.alert('Hold on!', 'Please fill out the sales price');
+            return null;
+        } else if (this.state.commission == 0) {
+            Alert.alert('Hold on!', 'Please fill out the commission');
             return null;
         } else {
             const token = await AsyncStorage.getItem('token');
@@ -94,11 +96,15 @@ class Plus extends React.Component {
 
             const data = {
                 name: this.state.name,
-                phoneNumber: this.state.phoneNumber,
-                email: this.state.email,
+                phoneNumber: '',
+                email: '',
                 status: this.state.status,
                 clientType: this.state.clientType,
                 user_name: name,
+                salesPrice: this.state.salesPrice,
+                address: this.state.address,
+                closingDate: this.state.closingDate,
+                capped: this.state.capped,
                 gci:
                     this.state.salesPrice *
                     (this.state.commission / 100) *
@@ -126,6 +132,7 @@ class Plus extends React.Component {
                     this.setState({ client_type: 'Select Client Type' });
                     this.setState({ gci: 0 });
                     this.setState({ salesPrice: 0 });
+                    this.setState({ address: 0 });
                     this.setState({ commission: 0 });
 
                     this.refreshClients();
@@ -198,7 +205,7 @@ class Plus extends React.Component {
                                 this.setState({ name: val });
                             }}
                         />
-                        <LoginInput
+                        {/*<LoginInput
                             style={{
                                 backgroundColor: '#fff',
                             }}
@@ -223,6 +230,19 @@ class Plus extends React.Component {
                             placeholderTextColor='#11182750'
                             onChangeText={(val) => {
                                 this.setState({ email: val });
+                            }}
+                        />*/}
+                        <LoginInput
+                            style={{
+                                backgroundColor: '#fff',
+                            }}
+                            value={this.state.address}
+                            placeholder='ADDRESS'
+                            fontWeight='bold'
+                            autoCorrect={false}
+                            placeholderTextColor='#11182750'
+                            onChangeText={(val) => {
+                                this.setState({ address: val });
                             }}
                         />
 
@@ -252,6 +272,24 @@ class Plus extends React.Component {
                             <Picker.Item label='Closed' value='Closed' />
                         </Picker>
 
+                        {this.state.status == 'Contract' ? (
+                            <LoginInput
+                                style={{
+                                    backgroundColor: '#fff',
+                                }}
+                                value={this.state.closingDate}
+                                placeholder='CLOSING DATE (MM/DD/YY)'
+                                fontWeight='bold'
+                                autoCorrect={false}
+                                placeholderTextColor='#11182750'
+                                onChangeText={(val) => {
+                                    this.setState({ closingDate: val });
+                                }}
+                            />
+                        ) : (
+                            <View />
+                        )}
+
                         <LoginInput
                             style={{
                                 backgroundColor: '#fff',
@@ -273,7 +311,7 @@ class Plus extends React.Component {
                             }}
                             value={this.state.commission}
                             keyboardType='numeric'
-                            placeholder='COMMISSION % (i.e. 20%)'
+                            placeholder='COMMISSION % (i.e. 20)'
                             fontWeight='bold'
                             autoCorrect={false}
                             placeholderTextColor='#11182750'

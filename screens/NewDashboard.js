@@ -28,6 +28,7 @@ function mapStateToProps(state) {
     return {
         name: state.name,
         calls: state.calls,
+        clients: state.clients,
         appointments: state.appointments,
         lineChartData: state.lineChartData,
     };
@@ -237,24 +238,6 @@ class NewDashboard extends React.Component {
                             />
                         }
                     />
-                    {/*<RowView
-                            first={
-                                <DetailCard
-                                    text='Top 25'
-                                    symbol={
-                                        <UsersSymbol width={30} height={30} />
-                                    }
-                                />
-                            }
-                            second={
-                                <DetailCard
-                                    text='Metrics'
-                                    symbol={
-                                        <MetricsSymbol width={30} height={30} />
-                                    }
-                                />
-                            }
-                        />*/}
                     <RowView
                         first={
                             <DetailCard
@@ -304,13 +287,72 @@ class NewDashboard extends React.Component {
                         }
                         second={
                             <DetailCard
-                                text='Leads'
+                                text='Deals'
                                 symbol={<LeadSymbol width={30} height={30} />}
                                 content={
                                     <View style={{ paddingTop: 10 }}>
-                                        <SmallestTitle text='Buyer leadsource' />
-                                        <SmallestTitle
-                                            text={'-Zillow\n-Referral\n-Yelp'}
+                                        <RowView
+                                            first={
+                                                <SmallestTitle
+                                                    text={'Signed: '}
+                                                />
+                                            }
+                                            second={
+                                                <AdaptiveSmallestTitle
+                                                    text={
+                                                        this.props.clients.filter(
+                                                            (client) => {
+                                                                return (
+                                                                    client.status ==
+                                                                    'Signed'
+                                                                );
+                                                            },
+                                                        ).length
+                                                    }
+                                                />
+                                            }
+                                        />
+                                        <RowView
+                                            first={
+                                                <SmallestTitle
+                                                    text={'Contract: '}
+                                                />
+                                            }
+                                            second={
+                                                <AdaptiveSmallestTitle
+                                                    text={
+                                                        this.props.clients.filter(
+                                                            (client) => {
+                                                                return (
+                                                                    client.status ==
+                                                                    'Contract'
+                                                                );
+                                                            },
+                                                        ).length
+                                                    }
+                                                />
+                                            }
+                                        />
+                                        <RowView
+                                            first={
+                                                <SmallestTitle
+                                                    text={'Closed: '}
+                                                />
+                                            }
+                                            second={
+                                                <AdaptiveSmallestTitle
+                                                    text={
+                                                        this.props.clients.filter(
+                                                            (client) => {
+                                                                return (
+                                                                    client.status ==
+                                                                    'Closed'
+                                                                );
+                                                            },
+                                                        ).length
+                                                    }
+                                                />
+                                            }
                                         />
                                     </View>
                                 }

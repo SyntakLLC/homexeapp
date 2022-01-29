@@ -9,7 +9,7 @@ import {
     SafeAreaView,
     Dimensions,
     Text,
-    Linking,
+    Alert,
     Platform,
 } from 'react-native';
 import { connect } from 'react-redux';
@@ -39,6 +39,10 @@ function mapDispatchToProps(dispatch) {
 Number.prototype.clamp = function (min, max) {
     return this <= min ? min : this >= max ? max : this;
 };
+
+function numberWithCommas(x) {
+    return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+}
 
 class Clients extends React.Component {
     state = {
@@ -84,14 +88,49 @@ class Clients extends React.Component {
                 this.state.filter == 'All'
             ) {
                 apptList.push(
-                    <DetailCard
-                        key={client.name}
-                        name={client.name}
-                        clientType={client.client_type}
-                        gci={client.gci}
-                        email={client.email}
-                        url={this.state.phonePrefix + client.phone}
-                    />,
+                    <TouchableOpacity
+                        onPress={() => {
+                            let address = 'Address: ' + client.address + '\n';
+                            let salesPrice =
+                                'Sales Price: $' +
+                                numberWithCommas(client.sales_price) +
+                                '\n';
+                            let closingDate =
+                                client.closing_date == null
+                                    ? ''
+                                    : 'Closing Date: ' +
+                                      client.closing_date +
+                                      '\n';
+                            let status = 'Status: ' + client.status + '\n';
+                            let commission =
+                                'Commission: $' +
+                                numberWithCommas(client.gci) +
+                                '\n';
+                            let capped =
+                                client.capped == 1
+                                    ? 'Capped: Yes'
+                                    : 'Capped: No';
+
+                            Alert.alert(
+                                client.name,
+                                address +
+                                    salesPrice +
+                                    closingDate +
+                                    status +
+                                    commission +
+                                    capped,
+                            );
+                        }}
+                    >
+                        <DetailCard
+                            key={client.name}
+                            name={client.name}
+                            clientType={client.client_type}
+                            gci={client.gci}
+                            email={client.email}
+                            status={client.status}
+                        />
+                    </TouchableOpacity>,
                 );
             }
         }
@@ -101,10 +140,6 @@ class Clients extends React.Component {
         // }
 
         return <View>{apptList}</View>;
-    }
-
-    numberWithCommas(x) {
-        return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
     }
 
     render() {
@@ -122,6 +157,133 @@ class Clients extends React.Component {
                 >
                     <View style={tailwind('mt-6 mb-4 flex-col')}>
                         <Title text='Clients' />
+                    </View>
+
+                    <View
+                        style={{
+                            width: '100%',
+                            alignItems: 'center',
+                            marginBottom: 20,
+                        }}
+                    >
+                        <SmallerTitle
+                            style={{
+                                color: global.secondaryColor,
+                            }}
+                            text='Your Actual Income (so far)'
+                        />
+
+                        <View style={{ width: '100%' }}>
+                            <RowView
+                                first={
+                                    <SmallerTitle
+                                        style={{
+                                            color: global.secondaryColor,
+                                        }}
+                                        text={
+                                            '$' +
+                                            numberWithCommas(
+                                                this.props.clients
+                                                    .reduce(function (a, b) {
+                                                        return (
+                                                            a + parseInt(b.gci)
+                                                        );
+                                                    }, 0)
+                                                    .toFixed(2),
+                                            )
+                                        }
+                                    />
+                                }
+                                second={
+                                    <SmallerTitle
+                                        style={{
+                                            color: global.secondaryColor,
+                                        }}
+                                        text={
+                                            '$' +
+                                            numberWithCommas(
+                                                (540000.0).toFixed(2),
+                                            )
+                                        }
+                                    />
+                                }
+                            />
+                        </View>
+
+                        <View
+                            style={{
+                                width: '100%',
+                                height: 15,
+                                marginTop: 10,
+                                backgroundColor: global.secondaryColor + '50',
+                                borderRadius: 8,
+                                overflow: 'hidden',
+                                flexDirection: 'row',
+                            }}
+                        >
+                            <View
+                                style={{
+                                    width:
+                                        100 *
+                                            (this.props.clients
+                                                .filter((client) => {
+                                                    return (
+                                                        client.status ==
+                                                        'Signed'
+                                                    );
+                                                })
+                                                .reduce(function (a, b) {
+                                                    return a + parseInt(b.gci);
+                                                }, 0) /
+                                                540000) +
+                                        '%',
+                                    height: 15,
+                                    backgroundColor: global.primaryColor + '70',
+                                }}
+                            />
+
+                            <View
+                                style={{
+                                    width:
+                                        100 *
+                                            (this.props.clients
+                                                .filter((client) => {
+                                                    return (
+                                                        client.status ==
+                                                        'Contract'
+                                                    );
+                                                })
+                                                .reduce(function (a, b) {
+                                                    return a + parseInt(b.gci);
+                                                }, 0) /
+                                                540000) +
+                                        '%',
+                                    height: 15,
+                                    backgroundColor: global.greenColor + '70',
+                                }}
+                            />
+
+                            <View
+                                style={{
+                                    width:
+                                        100 *
+                                            (this.props.clients
+                                                .filter((client) => {
+                                                    return (
+                                                        client.status ==
+                                                        'Closed'
+                                                    );
+                                                })
+                                                .reduce(function (a, b) {
+                                                    return a + parseInt(b.gci);
+                                                }, 0) /
+                                                540000) +
+                                        '%',
+                                    height: 15,
+                                    backgroundColor: global.redColor + '70',
+                                }}
+                            />
+                        </View>
                     </View>
 
                     <View
@@ -335,44 +497,36 @@ const DetailCard = (item) => (
 
                         <SecondaryTitle text={item.clientType} />
 
-                        <SmallestTitle text={'$' + item.gci} />
+                        <SmallestTitle
+                            text={'$' + numberWithCommas(item.gci)}
+                        />
                     </View>
 
-                    <RowView
-                        first={
-                            <TouchableOpacity
-                                onPress={() =>
-                                    Linking.openURL('mailto:' + item.email)
-                                }
-                                style={{
-                                    marginHorizontal: 10,
-                                    padding: 5,
-                                    borderRadius: 30,
-                                    alignItems: 'center',
-                                    backgroundColor: global.primaryColor,
-                                    width: 30,
-                                    height: 30,
-                                }}
-                            >
-                                <EmailSymbol />
-                            </TouchableOpacity>
-                        }
-                        second={
-                            <TouchableOpacity
-                                onPress={() => Linking.openURL(item.url)}
-                                style={{
-                                    padding: 5,
-                                    borderRadius: 30,
-                                    alignItems: 'center',
-                                    backgroundColor: global.primaryColor,
-                                    width: 30,
-                                    height: 30,
-                                }}
-                            >
-                                <PhoneSymbol />
-                            </TouchableOpacity>
-                        }
-                    />
+                    <View
+                        style={{
+                            marginHorizontal: 30,
+                            padding: 5,
+                            borderRadius: 30,
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            backgroundColor:
+                                item.status == 'Signed'
+                                    ? global.primaryColor
+                                    : item.status == 'Closed'
+                                    ? global.greenColor
+                                    : global.redColor,
+                            width: 30,
+                            height: 30,
+                        }}
+                    >
+                        <Text style={{ color: 'white' }}>
+                            {item.status == 'Signed'
+                                ? 'S'
+                                : item.status == 'Closed'
+                                ? 'Cl'
+                                : 'Co'}
+                        </Text>
+                    </View>
                 </View>
             }
         />
@@ -388,4 +542,16 @@ const LabelGroup = (item) => (
         </Text>
         <Text style={tailwind('text-xl text-gray-700 mb-5')}>{item.text}</Text>
     </View>
+);
+
+const SmallerTitle = (item) => (
+    <Text
+        style={{
+            color: global.primaryColor,
+            fontWeight: 'bold',
+            fontSize: 15,
+        }}
+    >
+        {item.text}
+    </Text>
 );

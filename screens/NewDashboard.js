@@ -119,7 +119,7 @@ class NewDashboard extends React.Component {
                     <RowView
                         first={
                             <DetailCard
-                                text={'Track My\nNet Worth'}
+                                text={'Goal\nTracker'}
                                 symbol={<DollarSymbol width={30} height={30} />}
                                 content={
                                     <RowView

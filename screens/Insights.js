@@ -102,7 +102,7 @@ class Insights extends React.Component {
                         }
                         second={
                             <InfoBubble
-                                text='Contacts'
+                                text='Contracts'
                                 value={(this.props.clients.length / 50) * 100}
                                 actualValue={this.props.clients.length}
                             />
@@ -365,13 +365,13 @@ const StatisticsBar = (item) => (
     <View
         style={{ width: '50%', marginBottom: 10, transform: [{ scale: 0.8 }] }}
     >
-        <SmallestTitle text={item.text + ': ' + item.value + '/' + item.max} />
+        <SmallestTitle text={item.text} />
         <View
             style={{
                 height: 10,
             }}
         />
-        <View
+        {/*<View
             style={{
                 width: '100%',
                 height: 15,
@@ -392,6 +392,7 @@ const StatisticsBar = (item) => (
                     borderRadius: 8,
                 }}
             />
-        </View>
+        </View>*/}
+        <Title text={item.value} />
     </View>
 );

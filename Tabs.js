@@ -31,6 +31,7 @@ import Users from './screens/Users';
 import NewDashboard from './screens/NewDashboard';
 import Insights from './screens/Insights';
 import Clients from './screens/Clients';
+import ClientShow from './screens/ClientShow';
 import Plus from './screens/Plus';
 import Login from './screens/Login';
 import './global';
@@ -78,6 +79,22 @@ function mapDispatchToProps(dispatch) {
                 lineChartData,
             }),
     };
+}
+
+class ClientStack extends React.Component {
+    render() {
+        return (
+            <Stack.Navigator
+                initialRouteName='Clients'
+                screenOptions={({ route }) => ({
+                    headerShown: false,
+                })}
+            >
+                <Stack.Screen name='Clients' component={Clients} />
+                <Stack.Screen name='ClientShow' component={ClientShow} />
+            </Stack.Navigator>
+        );
+    }
 }
 
 class Tabs extends React.Component {
@@ -187,7 +204,7 @@ class Tabs extends React.Component {
                 <Tab.Screen name='Plus' component={Plus} />
                 <Tab.Screen name='Insights' component={Insights} />
                 <Tab.Screen name='NewDashboard' component={NewDashboard} />
-                <Tab.Screen name='Clients' component={Clients} />
+                <Tab.Screen name='Clients' component={ClientStack} />
             </Tab.Navigator>
         );
     }

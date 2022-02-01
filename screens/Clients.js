@@ -11,6 +11,7 @@ import {
     Text,
     Alert,
     Platform,
+    AsyncStorage,
 } from 'react-native';
 import { connect } from 'react-redux';
 
@@ -22,6 +23,7 @@ function mapStateToProps(state) {
         appointments: state.appointments,
         clients: state.clients,
         listings: state.listings,
+        lineChartData: state.lineChartData,
     };
 }
 
@@ -56,6 +58,48 @@ class Clients extends React.Component {
         } else {
             this.setState({ phonePrefix: 'tel:' });
         }
+    }
+
+    getExpectedIncome() {
+        return this.props.lineChartData[
+            this.props.lineChartData.length - 1
+        ].toFixed(2);
+    }
+
+    async updateClient(client) {
+        const token = await AsyncStorage.getItem('token');
+
+        const data = {
+            clientId: client.uuid,
+            name: 'JJ',
+            phoneNumber: 'JJ',
+            email: 'JJ',
+            status: 'JJ',
+            clientType: 'JJ',
+            salesPrice: 'JJ',
+            address: 'JJ',
+            closingDate: 'JJ',
+            capped: 1,
+            gci: 200.0,
+        };
+
+        // console.log(data);
+
+        await fetch('https://homexe.win/api/client/update', {
+            method: 'PUT',
+            headers: new Headers({
+                Authorization: 'Bearer ' + token,
+                'Content-Type': 'application/json',
+                Accept: 'application/json',
+            }),
+            body: JSON.stringify(data),
+        })
+            .then((response) => {
+                // this.refreshClients();
+            })
+            .catch((error) => {
+                Alert.alert(error);
+            });
     }
 
     renderClientList() {
@@ -108,8 +152,11 @@ class Clients extends React.Component {
                                 '\n';
                             let capped =
                                 client.capped == 1
-                                    ? 'Capped: Yes'
-                                    : 'Capped: No';
+                                    ? 'Capped: Yes\n'
+                                    : 'Capped: No\n';
+                            let userName = 'Agent: ' + client.user_name;
+
+                            this.updateClient();
 
                             Alert.alert(
                                 client.name,
@@ -118,17 +165,25 @@ class Clients extends React.Component {
                                     closingDate +
                                     status +
                                     commission +
-                                    capped,
+                                    capped +
+                                    userName,
                             );
                         }}
                     >
                         <DetailCard
+                            address={client.address}
                             key={client.name}
                             name={client.name}
                             clientType={client.client_type}
                             gci={client.gci}
                             email={client.email}
                             status={client.status}
+                            agentName={client.user_name}
+                            onPress={() => {
+                                this.props.navigation.navigate('ClientShow', {
+                                    client,
+                                });
+                            }}
                         />
                     </TouchableOpacity>,
                 );
@@ -202,7 +257,7 @@ class Clients extends React.Component {
                                         text={
                                             '$' +
                                             numberWithCommas(
-                                                (540000.0).toFixed(2),
+                                                this.getExpectedIncome(),
                                             )
                                         }
                                     />
@@ -235,7 +290,7 @@ class Clients extends React.Component {
                                                 .reduce(function (a, b) {
                                                     return a + parseInt(b.gci);
                                                 }, 0) /
-                                                540000) +
+                                                this.getExpectedIncome()) +
                                         '%',
                                     height: 15,
                                     backgroundColor: global.primaryColor + '70',
@@ -256,10 +311,10 @@ class Clients extends React.Component {
                                                 .reduce(function (a, b) {
                                                     return a + parseInt(b.gci);
                                                 }, 0) /
-                                                540000) +
+                                                this.getExpectedIncome()) +
                                         '%',
                                     height: 15,
-                                    backgroundColor: global.greenColor + '70',
+                                    backgroundColor: global.redColor + '70',
                                 }}
                             />
 
@@ -277,10 +332,10 @@ class Clients extends React.Component {
                                                 .reduce(function (a, b) {
                                                     return a + parseInt(b.gci);
                                                 }, 0) /
-                                                540000) +
+                                                this.getExpectedIncome()) +
                                         '%',
                                     height: 15,
-                                    backgroundColor: global.redColor + '70',
+                                    backgroundColor: global.greenColor + '70',
                                 }}
                             />
                         </View>
@@ -468,12 +523,30 @@ const DetailCard = (item) => (
                         padding: 5,
                         borderRadius: 30,
                         alignItems: 'center',
-                        backgroundColor: '#fff',
+                        justifyContent: 'center',
+                        backgroundColor:
+                            item.status == 'Signed'
+                                ? global.primaryColor
+                                : item.status == 'Closed'
+                                ? global.greenColor
+                                : global.redColor,
                         width: 50,
                         height: 50,
                     }}
                 >
-                    <ClientSymbol />
+                    <Text
+                        style={{
+                            color: 'white',
+                            fontSize: 20,
+                            fontWeight: 'bold',
+                        }}
+                    >
+                        {item.status == 'Signed'
+                            ? 'S'
+                            : item.status == 'Closed'
+                            ? 'Cl'
+                            : 'Co'}
+                    </Text>
                 </View>
             }
             second={
@@ -493,54 +566,58 @@ const DetailCard = (item) => (
                             width: '77%',
                         }}
                     >
-                        <SmallestTitle text={item.name} />
+                        <Text
+                            numberOfLines={1}
+                            style={{
+                                color: global.primaryColor,
+                                fontWeight: 'bold',
+                                fontSize: 15,
+                            }}
+                        >
+                            {item.address}
+                        </Text>
 
-                        <SecondaryTitle text={item.clientType} />
-
-                        <SmallestTitle
-                            text={'$' + numberWithCommas(item.gci)}
+                        <SecondaryTitle
+                            text={item.name + ' • ' + item.clientType}
                         />
-                    </View>
 
-                    <View
-                        style={{
-                            marginHorizontal: 30,
-                            padding: 5,
-                            borderRadius: 30,
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            backgroundColor:
-                                item.status == 'Signed'
-                                    ? global.primaryColor
-                                    : item.status == 'Closed'
-                                    ? global.greenColor
-                                    : global.redColor,
-                            width: 30,
-                            height: 30,
-                        }}
-                    >
-                        <Text style={{ color: 'white' }}>
-                            {item.status == 'Signed'
-                                ? 'S'
-                                : item.status == 'Closed'
-                                ? 'Cl'
-                                : 'Co'}
+                        <Text
+                            numberOfLines={1}
+                            style={{
+                                color: global.primaryColor,
+                                fontWeight: 'bold',
+                                fontSize: 15,
+                            }}
+                        >
+                            {'$' +
+                                numberWithCommas(item.gci) +
+                                ' • ' +
+                                item.agentName}
                         </Text>
                     </View>
+
+                    <TouchableOpacity
+                        style={{
+                            marginHorizontal: 30,
+                            padding: 15,
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            paddingVertical: 20,
+                        }}
+                        onPress={item.onPress}
+                    >
+                        <Text
+                            style={{
+                                color: global.primaryColor,
+                                fontWeight: 'bold',
+                            }}
+                        >
+                            Edit
+                        </Text>
+                    </TouchableOpacity>
                 </View>
             }
         />
-    </View>
-);
-
-const LabelGroup = (item) => (
-    <View>
-        <Text
-            style={tailwind('text-xs font-medium uppercase text-gray-500 mb-1')}
-        >
-            {item.label}
-        </Text>
-        <Text style={tailwind('text-xl text-gray-700 mb-5')}>{item.text}</Text>
     </View>
 );
 

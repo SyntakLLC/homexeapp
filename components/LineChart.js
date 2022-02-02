@@ -20,6 +20,7 @@ function mapStateToProps(state) {
         calls: state.calls,
         appointments: state.appointments,
         lineChartData: state.lineChartData,
+        goal: state.goal,
     };
 }
 
@@ -35,6 +36,15 @@ function mapDispatchToProps(dispatch) {
 }
 
 class LineChartComponent extends React.Component {
+    state = {
+        goal: 200000,
+        limit: 12,
+    };
+
+    componentDidMount() {
+        this.setState({ goal: this.props.goal });
+    }
+
     renderDashboardData() {
         var dashboardData = [];
 
@@ -61,21 +71,23 @@ class LineChartComponent extends React.Component {
             );
         } else {
             dashboardData.push(
-                <View>
+                <View
+                    style={{
+                        paddingVertical: 10,
+                        backgroundColor: global.chartColor,
+                        borderRadius: 25,
+                    }}
+                >
                     <LineChart
                         data={{
-                            labels: this.returnMonthList(),
-                            legend: [
-                                'Estimated Income: ' +
-                                    this.numberWithCommas(
-                                        this.props.lineChartData[
-                                            this.props.lineChartData.length - 1
-                                        ].toFixed(2),
-                                    ),
-                            ],
+                            labels: this.returnMonthList(this.state.limit),
                             datasets: [
                                 {
-                                    data: this.props.lineChartData,
+                                    data: this.props.lineChartData.slice(
+                                        this.props.lineChartData.length -
+                                            this.state.limit,
+                                        this.props.lineChartData.length,
+                                    ),
                                 },
                             ],
                         }}
@@ -106,6 +118,84 @@ class LineChartComponent extends React.Component {
                             borderRadius: 25,
                         }}
                     />
+
+                    <View
+                        style={{
+                            flexDirection: 'row',
+                            justifyContent: 'space-between',
+                            paddingHorizontal: 20,
+                            paddingVertical: 10,
+                        }}
+                    >
+                        <TouchableOpacity
+                            onPress={() => {
+                                this.setState({ limit: 3 });
+                            }}
+                            style={{
+                                padding: 10,
+                                backgroundColor:
+                                    this.state.limit == 3
+                                        ? global.primaryColor
+                                        : global.secondaryColor,
+                                borderRadius: 10,
+                            }}
+                        >
+                            <Text
+                                style={{
+                                    color: 'white',
+                                    fontWeight: '700',
+                                }}
+                            >
+                                3 months
+                            </Text>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                            onPress={() => {
+                                this.setState({ limit: 6 });
+                            }}
+                            style={{
+                                padding: 10,
+                                backgroundColor:
+                                    this.state.limit == 6
+                                        ? global.primaryColor
+                                        : global.secondaryColor,
+                                borderRadius: 10,
+                            }}
+                        >
+                            <Text
+                                style={{
+                                    color: 'white',
+                                    fontWeight: '700',
+                                }}
+                            >
+                                6 months
+                            </Text>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                            onPress={() => {
+                                this.setState({ limit: 12 });
+                            }}
+                            style={{
+                                padding: 10,
+                                backgroundColor:
+                                    this.state.limit == 12
+                                        ? global.primaryColor
+                                        : global.secondaryColor,
+                                borderRadius: 10,
+                            }}
+                        >
+                            <Text
+                                style={{
+                                    color: 'white',
+                                    fontWeight: '700',
+                                }}
+                            >
+                                12 months
+                            </Text>
+                        </TouchableOpacity>
+                    </View>
                 </View>,
             );
         }
@@ -114,7 +204,7 @@ class LineChartComponent extends React.Component {
     }
 
     // shifts the month list so the current month is first
-    returnMonthList() {
+    returnMonthList(limit) {
         var months = [
             'Jan',
             'Feb',
@@ -133,8 +223,11 @@ class LineChartComponent extends React.Component {
         let now = moment().format('MMMM');
         let n = months.indexOf(now.toString()) + 2;
         months = this.arrayRotate(months, false, n);
-
-        return months;
+        if (months.length - limit == months.length) {
+            return months;
+        } else {
+            return months.slice(months.length - limit, months.length);
+        }
     }
 
     // rotates an array n times
@@ -149,10 +242,6 @@ class LineChartComponent extends React.Component {
             }
         }
         return arr;
-    }
-
-    numberWithCommas(x) {
-        return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
     }
 
     render() {

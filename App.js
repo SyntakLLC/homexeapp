@@ -17,6 +17,7 @@ const initialState = {
     listings: [],
     clients: [],
     lineChartData: [],
+    goal: 100000,
 };
 
 // The Redux change state functions
@@ -36,6 +37,8 @@ const reducer = (state = initialState, action) => {
             return { ...state, listings: action.listings };
         case 'UPDATE_LINE_CHART_DATA':
             return { ...state, lineChartData: action.lineChartData };
+        case 'UPDATE_GOAL':
+            return { ...state, goal: action.goal };
         default:
             return state;
     }

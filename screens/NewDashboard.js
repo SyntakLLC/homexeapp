@@ -1,23 +1,31 @@
 import React from 'react';
 import tailwind from 'tailwind-rn';
-// import { LineChart } from 'react-native-chart-kit';
 import LineChart from '../components/LineChart';
 import {
     ScrollView,
     View,
-    ActivityIndicator,
     TouchableOpacity,
     SafeAreaView,
     Dimensions,
     Text,
-    Animated,
     AsyncStorage,
+    Alert,
 } from 'react-native';
-import moment from 'moment';
 import { DollarSymbol, HomeSymbol, LeadSymbol, PhoneSymbol } from '../icons';
 import ActivityRings from 'react-native-activity-rings';
 import { connect } from 'react-redux';
-import styled from 'styled-components';
+import {
+    Title,
+    Subtitle,
+    RowView,
+    DashboardGridItem,
+    SmallestTitle,
+    AdaptiveSmallestTitle,
+    LogoutButton,
+    StockPrice,
+    StockChange,
+} from '../components/components';
+import Users from './Users';
 
 // AsyncStorage stuff regarding the login status:
 const USER_KEY = 'auth-key-csv';
@@ -31,6 +39,7 @@ function mapStateToProps(state) {
         clients: state.clients,
         appointments: state.appointments,
         lineChartData: state.lineChartData,
+        goal: state.goal,
     };
 }
 
@@ -62,63 +71,139 @@ function mapDispatchToProps(dispatch) {
                 type: 'UPDATE_LISTINGS',
                 listings,
             }),
+        updateGoal: (goal) =>
+            dispatch({
+                type: 'UPDATE_GOAL',
+                goal,
+            }),
     };
 }
 
 class NewDashboard extends React.Component {
-    state = {
-        calls: [],
-        appointments: [],
-        loginModalTop: new Animated.Value(-550),
-        pickerOpen: false,
-        hasLoggedIn: true,
-        loginEmail: '',
-        loginPassword: '',
-    };
-
     emptyRedux() {
         this.props.updateCalls([]);
         this.props.updateAppointments([]);
         this.props.updateListings([]);
         this.props.updateClients([]);
+        this.props.updateGoal(0);
+    }
+
+    async editGoal(goal) {
+        const token = await AsyncStorage.getItem('token');
+        const id = await AsyncStorage.getItem('id');
+        console.log(id);
+
+        const data = {
+            userId: parseInt(id),
+            goal: parseInt(goal),
+        };
+
+        await fetch('https://homexe.win/api/goal/update', {
+            method: 'PUT',
+            headers: new Headers({
+                Authorization: 'Bearer ' + token,
+                'Content-Type': 'application/json',
+                Accept: 'application/json',
+            }),
+            body: JSON.stringify(data),
+        })
+            .then((response) => {
+                this.props.updateGoal(goal.toString());
+            })
+            .catch((error) => {
+                Alert.alert(error);
+            });
+    }
+
+    returnStockChange() {
+        let current =
+            this.props.lineChartData[this.props.lineChartData.length - 1];
+        let lastMonth =
+            this.props.lineChartData[this.props.lineChartData.length - 2];
+        let change = current - lastMonth;
+
+        if (isNaN(change)) {
+            change = 0;
+        }
+
+        if (change > 0) {
+            return (
+                <StockChange
+                    positive={true}
+                    text={
+                        '$' +
+                        global.numberWithCommas(change.toFixed(0)) +
+                        ' ↑ month'
+                    }
+                />
+            );
+        } else {
+            return (
+                <StockChange
+                    positive={false}
+                    text={
+                        '$' +
+                        global.numberWithCommas(Math.abs(change).toFixed(0)) +
+                        ' ↓ month'
+                    }
+                />
+            );
+        }
     }
 
     render() {
         return (
             <SafeAreaView
-                style={{}}
-                pointerEvents={this.state.pickerOpen ? 'none' : 'auto'}
-                style={
-                    this.state.pickerOpen
-                        ? {
-                              opacity: 0.4,
-                              height: global.screenHeight,
-                              width: global.screenWidth,
-                              paddingHorizontal: 8,
-                              backgroundColor: '#fff',
-                              height: Dimensions.get('window').height,
-                          }
-                        : {
-                              height: global.screenHeight,
-                              width: global.screenWidth,
-                              paddingHorizontal: 8,
-                              backgroundColor: '#fff',
-                              height: Dimensions.get('window').height,
-                          }
-                }
+                style={{
+                    height: global.screenHeight,
+                    width: global.screenWidth,
+                    backgroundColor: '#fff',
+                    height: Dimensions.get('window').height,
+                }}
             >
                 <ScrollView
                     style={{ paddingHorizontal: 16 }}
                     contentContainerStyle={{ paddingBottom: 120 }}
                 >
-                    <View style={tailwind('mt-6 mb-4 flex-col')}>
+                    {/*<View style={tailwind('mt-6 mb-4 flex-col')}>
                         <Title text='WELCOME!' />
                         <Subtitle text={this.props.name} />
+                    </View>*/}
+
+                    <View style={tailwind('mt-6 mb-4 flex-col')}>
+                        <StockPrice
+                            text={
+                                this.props.lineChartData.length > 0
+                                    ? '$' +
+                                      global.numberWithCommas(
+                                          this.props.lineChartData[
+                                              this.props.lineChartData.length -
+                                                  1
+                                          ].toFixed(2),
+                                      )
+                                    : 'Loading...'
+                            }
+                        />
+                        {this.returnStockChange()}
+                        <Text
+                            style={{
+                                color: global.secondaryColor,
+                                fontWeight: 'bold',
+                                fontSize: 20,
+                            }}
+                        >
+                            {'Goal: $' +
+                                global.numberWithCommas(
+                                    parseInt(this.props.goal),
+                                )}
+                        </Text>
                     </View>
+
                     <LineChart />
+
                     <RowView
                         first={
-                            <DetailCard
+                            <DashboardGridItem
                                 text={'Goal\nTracker'}
                                 symbol={<DollarSymbol width={30} height={30} />}
                                 content={
@@ -134,9 +219,8 @@ class NewDashboard extends React.Component {
                                                                     .lineChartData
                                                                     .length - 1
                                                             ] /
-                                                            Math.max(
-                                                                ...this.props
-                                                                    .lineChartData,
+                                                            parseInt(
+                                                                this.props.goal,
                                                             ),
                                                         color:
                                                             this.props
@@ -145,11 +229,13 @@ class NewDashboard extends React.Component {
                                                                     .lineChartData
                                                                     .length - 1
                                                             ] /
-                                                                Math.max(
-                                                                    ...this
-                                                                        .props
-                                                                        .lineChartData,
-                                                                ) >=
+                                                                this.props
+                                                                    .lineChartData[
+                                                                    this.props
+                                                                        .lineChartData
+                                                                        .length -
+                                                                        2
+                                                                ] >=
                                                             0.5
                                                                 ? global.greenColor
                                                                 : global.redColor,
@@ -171,9 +257,8 @@ class NewDashboard extends React.Component {
                                                                 .lineChartData
                                                                 .length - 1
                                                         ] /
-                                                            Math.max(
-                                                                ...this.props
-                                                                    .lineChartData,
+                                                            parseInt(
+                                                                this.props.goal,
                                                             )) *
                                                         100
                                                     ).toFixed(0) + '%'
@@ -185,7 +270,7 @@ class NewDashboard extends React.Component {
                             />
                         }
                         second={
-                            <DetailCard
+                            <DashboardGridItem
                                 text='Appts'
                                 symbol={<HomeSymbol width={30} height={30} />}
                                 content={
@@ -240,7 +325,7 @@ class NewDashboard extends React.Component {
                     />
                     <RowView
                         first={
-                            <DetailCard
+                            <DashboardGridItem
                                 text='Calls'
                                 symbol={<PhoneSymbol width={30} height={30} />}
                                 content={
@@ -286,7 +371,7 @@ class NewDashboard extends React.Component {
                             />
                         }
                         second={
-                            <DetailCard
+                            <DashboardGridItem
                                 text='Deals'
                                 symbol={<LeadSymbol width={30} height={30} />}
                                 content={
@@ -367,6 +452,32 @@ class NewDashboard extends React.Component {
                             marginTop: 20,
                         }}
                         onPress={() => {
+                            Alert.prompt(
+                                'Change goal',
+                                'Enter your new desired income goal. Please only use numbers.',
+                                [
+                                    {
+                                        text: 'Cancel',
+                                        style: 'cancel',
+                                    },
+                                    {
+                                        text: 'OK',
+                                        onPress: (goal) => this.editGoal(goal),
+                                    },
+                                ],
+                            );
+                        }}
+                    >
+                        <LogoutButton text='Change Goal' />
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                        style={{
+                            width: '100%',
+                            alignItems: 'center',
+                            marginTop: 8,
+                        }}
+                        onPress={() => {
                             onSignOut();
                             // this.emptyRedux();
                             this.props.navigation.navigate('Login');
@@ -377,6 +488,8 @@ class NewDashboard extends React.Component {
                             text='Logout'
                         />
                     </TouchableOpacity>
+
+                    {/*<Users />*/}
                 </ScrollView>
             </SafeAreaView>
         );
@@ -384,126 +497,3 @@ class NewDashboard extends React.Component {
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(NewDashboard);
-
-const RowView = (item) => (
-    <View
-        style={{
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-        }}
-    >
-        {item.first}
-        {item.second}
-    </View>
-);
-
-const SmallerTitle = (item) => (
-    <Text
-        style={{
-            color: global.primaryColor,
-            fontWeight: 'bold',
-            fontSize: 20,
-        }}
-    >
-        {item.text}
-    </Text>
-);
-
-const AdaptiveSmallestTitle = (item) => (
-    <Text
-        style={{
-            color:
-                parseInt(item.text) == 0 ? global.redColor : global.greenColor,
-            fontWeight: 'bold',
-            fontSize: 15,
-        }}
-    >
-        {item.text}
-    </Text>
-);
-
-const SmallestTitle = (item) => (
-    <Text
-        style={{
-            color: global.primaryColor,
-            fontWeight: 'bold',
-            fontSize: 15,
-        }}
-    >
-        {item.text}
-    </Text>
-);
-
-const Title = (item) => (
-    <Text
-        style={{
-            color: global.primaryColor,
-            fontWeight: 'bold',
-            fontSize: 25,
-        }}
-    >
-        {item.text}
-    </Text>
-);
-
-const Subtitle = (item) => (
-    <Text
-        style={{
-            color: global.secondaryColor,
-            fontWeight: 'bold',
-            fontSize: 25,
-        }}
-    >
-        {item.text}
-    </Text>
-);
-
-const DetailCard = (item) => (
-    <View
-        style={{
-            width: 160,
-            height: 160,
-            backgroundColor: global.grayColor,
-            borderRadius: 25,
-            padding: 15,
-            marginTop: 20,
-        }}
-    >
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-            <SmallerTitle text={item.text} />
-            <View
-                style={{
-                    width: 40,
-                    height: 40,
-                    backgroundColor: global.primaryColor,
-                    borderRadius: 40,
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                }}
-            >
-                {item.symbol}
-            </View>
-        </View>
-
-        <View>{item.content}</View>
-    </View>
-);
-
-const LogoutButton = (item) => (
-    <View
-        style={{
-            width: Dimensions.get('window').width / 2 - 20,
-            borderRadius: 200,
-            minHeight: 50,
-            borderColor: global.primaryColor,
-            borderWidth: 2,
-            backgroundColor: 'white',
-            justifyContent: 'center',
-            marginBottom: 10,
-            alignItems: 'center',
-        }}
-    >
-        <SmallerTitle reduxName={item.reduxName} text={item.text} />
-    </View>
-);

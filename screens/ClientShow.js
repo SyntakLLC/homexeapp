@@ -16,6 +16,13 @@ import {
 } from 'react-native';
 import { connect } from 'react-redux';
 import styled from 'styled-components';
+import {
+    Title,
+    LoginInput,
+    Picker,
+    SelectButton,
+    AddJobText,
+} from '../components/components';
 
 // Where we grab the redux name state
 function mapStateToProps(state) {
@@ -45,10 +52,6 @@ function mapDispatchToProps(dispatch) {
     };
 }
 
-function numberWithCommas(x) {
-    return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-}
-
 class Clients extends React.Component {
     state = {
         name: this.props.route.params.client.name,
@@ -66,8 +69,6 @@ class Clients extends React.Component {
 
     async refreshClients() {
         const token = await AsyncStorage.getItem('token');
-        const name = await AsyncStorage.getItem('name');
-        var clients = [];
         await fetch('https://homexe.win/client/get', {
             headers: new Headers({
                 Authorization: 'Bearer ' + token,
@@ -327,247 +328,3 @@ class Clients extends React.Component {
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(Clients);
-
-const RowView = (item) => (
-    <View
-        style={{
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-        }}
-    >
-        {item.first}
-        {item.second}
-        {item.third}
-        {item.fourth}
-    </View>
-);
-
-const SmallestTitle = (item) => (
-    <Text
-        style={{
-            color: global.primaryColor,
-            fontWeight: 'bold',
-            fontSize: 15,
-        }}
-    >
-        {item.text}
-    </Text>
-);
-
-const SecondaryTitle = (item) => (
-    <Text
-        style={{
-            color: global.primaryColor,
-            fontSize: 15,
-        }}
-    >
-        {item.text}
-    </Text>
-);
-
-const MenuTitle = (item) => (
-    <Text
-        style={{
-            color: global.primaryColor,
-            fontWeight: 'bold',
-            paddingHorizontal: 5,
-            fontSize: 15,
-            textDecorationLine: item.textDecoration,
-        }}
-    >
-        {item.text}
-    </Text>
-);
-
-const Title = (item) => (
-    <Text
-        style={{
-            color: global.primaryColor,
-            fontWeight: 'bold',
-            fontSize: 25,
-        }}
-    >
-        {item.text}
-    </Text>
-);
-
-const Subtitle = (item) => (
-    <Text
-        style={{
-            color: global.secondaryColor,
-            fontWeight: 'bold',
-            fontSize: 25,
-        }}
-    >
-        {item.text}
-    </Text>
-);
-
-const DetailCard = (item) => (
-    <View
-        style={{
-            width: '100%',
-            backgroundColor: global.grayColor,
-            borderRadius: 10,
-            padding: 15,
-            marginTop: 20,
-            justifyContent: 'flex-start',
-            alignItems: 'flex-start',
-        }}
-    >
-        <RowView
-            first={
-                <View
-                    style={{
-                        padding: 5,
-                        borderRadius: 30,
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        backgroundColor:
-                            item.status == 'Signed'
-                                ? global.primaryColor
-                                : item.status == 'Closed'
-                                ? global.greenColor
-                                : global.redColor,
-                        width: 50,
-                        height: 50,
-                    }}
-                >
-                    <Text
-                        style={{
-                            color: 'white',
-                            fontSize: 20,
-                            fontWeight: 'bold',
-                        }}
-                    >
-                        {item.status == 'Signed'
-                            ? 'S'
-                            : item.status == 'Closed'
-                            ? 'Cl'
-                            : 'Co'}
-                    </Text>
-                </View>
-            }
-            second={
-                <View
-                    style={{
-                        flexDirection: 'row',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        maxWidth: '77%',
-                    }}
-                >
-                    <View
-                        style={{
-                            flexDirection: 'column',
-                            justifyContent: 'center',
-                            paddingLeft: 10,
-                            width: '77%',
-                        }}
-                    >
-                        <Text
-                            numberOfLines={1}
-                            style={{
-                                color: global.primaryColor,
-                                fontWeight: 'bold',
-                                fontSize: 15,
-                            }}
-                        >
-                            {item.address}
-                        </Text>
-
-                        <SecondaryTitle
-                            text={item.name + ' • ' + item.clientType}
-                        />
-
-                        <Text
-                            numberOfLines={1}
-                            style={{
-                                color: global.primaryColor,
-                                fontWeight: 'bold',
-                                fontSize: 15,
-                            }}
-                        >
-                            {'$' +
-                                numberWithCommas(item.gci) +
-                                ' • ' +
-                                item.agentName}
-                        </Text>
-                    </View>
-
-                    <TouchableOpacity
-                        style={{
-                            marginHorizontal: 30,
-                            padding: 15,
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            paddingVertical: 20,
-                        }}
-                    >
-                        <Text
-                            style={{
-                                color: global.primaryColor,
-                                fontWeight: 'bold',
-                            }}
-                        >
-                            Edit
-                        </Text>
-                    </TouchableOpacity>
-                </View>
-            }
-        />
-    </View>
-);
-
-const SmallerTitle = (item) => (
-    <Text
-        style={{
-            color: global.primaryColor,
-            fontWeight: 'bold',
-            fontSize: 15,
-        }}
-    >
-        {item.text}
-    </Text>
-);
-
-const LoginInput = styled.TextInput`
-    height: 40px;
-    border-radius: 20px;
-    background-color: rgb(230, 230, 230);
-    width: 90%;
-    padding-left: 20px;
-    margin-top: 10px;
-    color: #111827;
-    margin-bottom: 10px;
-`;
-
-const Picker = styled.Picker`
-    height: 220px;
-    border-radius: 20px;
-    background-color: white;
-    width: 90%;
-    padding-left: 20px;
-    margin-top: 10px;
-    color: #111827;
-    margin-bottom: 10px;
-    overflow: hidden;
-`;
-
-const SelectButton = styled.View`
-    height: 50px;
-    width: 94%;
-    flex: 1;
-    color: white;
-    align-items: center;
-    justify-content: center;
-    border-radius: 10px;
-`;
-
-const AddJobText = styled.Text`
-    font-weight: 700;
-    font-size: 17px;
-    color: white;
-    text-align: center;
-    line-height: 22px;
-`;

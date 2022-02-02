@@ -14,6 +14,11 @@ import {
 import moment from 'moment';
 import ActivityRings from 'react-native-activity-rings';
 import { connect } from 'react-redux';
+import {
+    StatisticsCard,
+    StatisticsInfoBubble,
+    Title,
+} from '../components/components';
 
 // Where we grab the redux name state
 function mapStateToProps(state) {
@@ -55,42 +60,42 @@ class Statistics extends React.Component {
 
                     <LineChart />
 
-                    <DetailCard
+                    <StatisticsCard
                         first={
-                            <InfoBubble
+                            <StatisticsInfoBubble
                                 text='Calls This Week'
                                 value={this.props.calls.week.toFixed(2)}
                             />
                         }
                         second={
-                            <InfoBubble
+                            <StatisticsInfoBubble
                                 text='Calls This Month'
                                 value={this.props.calls.month.toFixed(2)}
                             />
                         }
                         third={
-                            <InfoBubble
+                            <StatisticsInfoBubble
                                 text='Avg Daily Calls'
                                 value={this.props.calls.average.toFixed(2)}
                             />
                         }
                     />
 
-                    <DetailCard
+                    <StatisticsCard
                         first={
-                            <InfoBubble
+                            <StatisticsInfoBubble
                                 text='Appts Today'
                                 value={this.props.appointments.day.toFixed(2)}
                             />
                         }
                         second={
-                            <InfoBubble
+                            <StatisticsInfoBubble
                                 text='Appts This Month'
                                 value={this.props.appointments.month.toFixed(2)}
                             />
                         }
                         third={
-                            <InfoBubble
+                            <StatisticsInfoBubble
                                 text='Conversion Rate'
                                 value={this.props.appointments.conversion_rate.toFixed(
                                     2,
@@ -105,106 +110,3 @@ class Statistics extends React.Component {
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(Statistics);
-
-const RowView = (item) => (
-    <View
-        style={{
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-        }}
-    >
-        {item.first}
-        {item.second}
-    </View>
-);
-
-const SmallestTitle = (item) => (
-    <Text
-        style={{
-            color: global.primaryColor,
-            fontWeight: 'bold',
-            fontSize: 15,
-        }}
-    >
-        {item.text}
-    </Text>
-);
-
-const Title = (item) => (
-    <Text
-        style={{
-            color: global.primaryColor,
-            fontWeight: 'bold',
-            fontSize: 25,
-        }}
-    >
-        {item.text}
-    </Text>
-);
-
-const Subtitle = (item) => (
-    <Text
-        style={{
-            color: global.secondaryColor,
-            fontWeight: 'bold',
-            fontSize: 25,
-        }}
-    >
-        {item.text}
-    </Text>
-);
-
-const DetailCard = (item) => (
-    <View
-        style={{
-            width: '100%',
-            height: 140,
-            backgroundColor: global.grayColor,
-            borderRadius: 25,
-            padding: 15,
-            marginTop: 20,
-            justifyContent: 'center',
-            alignItems: 'center',
-        }}
-    >
-        <View
-            style={{
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                transform: [{ scale: 0.8 }],
-            }}
-        >
-            {item.first}
-            {item.second}
-            {item.third}
-        </View>
-    </View>
-);
-
-const InfoBubble = (item) => (
-    <View
-        style={{
-            alignItems: 'center',
-            margin: 4,
-        }}
-    >
-        <SmallestTitle text={item.text} />
-        <ActivityRings
-            data={[
-                {
-                    value: (item.value / 100).clamp(0.01, 1),
-                    color:
-                        (item.value / 100).clamp(0.01, 1) > 0.5
-                            ? global.greenColor
-                            : global.redColor,
-                },
-            ]}
-            config={{
-                width: 100,
-                height: 100,
-            }}
-        />
-        <SmallestTitle text={item.value} />
-    </View>
-);

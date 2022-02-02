@@ -14,6 +14,13 @@ import {
     AsyncStorage,
 } from 'react-native';
 import { connect } from 'react-redux';
+import {
+    Title,
+    SmallerTitle,
+    RowView,
+    MenuTitle,
+    ClientCard,
+} from '../components/components';
 
 // Where we grab the redux name state
 function mapStateToProps(state) {
@@ -24,6 +31,7 @@ function mapStateToProps(state) {
         clients: state.clients,
         listings: state.listings,
         lineChartData: state.lineChartData,
+        goal: state.goal,
     };
 }
 
@@ -36,14 +44,6 @@ function mapDispatchToProps(dispatch) {
                 name,
             }),
     };
-}
-
-Number.prototype.clamp = function (min, max) {
-    return this <= min ? min : this >= max ? max : this;
-};
-
-function numberWithCommas(x) {
-    return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 }
 
 class Clients extends React.Component {
@@ -134,10 +134,17 @@ class Clients extends React.Component {
                 apptList.push(
                     <TouchableOpacity
                         onPress={() => {
+                            var salesPricePrefix = 'Sales Price: $';
+                            if (
+                                (client.client_type = 'Mass Offer Acquisition')
+                            ) {
+                                salesPricePrefix = 'Purchase Price: $';
+                            }
+
                             let address = 'Address: ' + client.address + '\n';
                             let salesPrice =
-                                'Sales Price: $' +
-                                numberWithCommas(client.sales_price) +
+                                salesPricePrefix +
+                                global.numberWithCommas(client.sales_price) +
                                 '\n';
                             let closingDate =
                                 client.closing_date == null
@@ -148,15 +155,13 @@ class Clients extends React.Component {
                             let status = 'Status: ' + client.status + '\n';
                             let commission =
                                 'Commission: $' +
-                                numberWithCommas(client.gci) +
+                                global.numberWithCommas(client.gci) +
                                 '\n';
                             let capped =
                                 client.capped == 1
                                     ? 'Capped: Yes\n'
                                     : 'Capped: No\n';
                             let userName = 'Agent: ' + client.user_name;
-
-                            this.updateClient();
 
                             Alert.alert(
                                 client.name,
@@ -170,7 +175,7 @@ class Clients extends React.Component {
                             );
                         }}
                     >
-                        <DetailCard
+                        <ClientCard
                             address={client.address}
                             key={client.name}
                             name={client.name}
@@ -237,7 +242,7 @@ class Clients extends React.Component {
                                         }}
                                         text={
                                             '$' +
-                                            numberWithCommas(
+                                            global.numberWithCommas(
                                                 this.props.clients
                                                     .reduce(function (a, b) {
                                                         return (
@@ -256,8 +261,8 @@ class Clients extends React.Component {
                                         }}
                                         text={
                                             '$' +
-                                            numberWithCommas(
-                                                this.getExpectedIncome(),
+                                            global.numberWithCommas(
+                                                parseInt(this.props.goal),
                                             )
                                         }
                                     />
@@ -284,34 +289,13 @@ class Clients extends React.Component {
                                                 .filter((client) => {
                                                     return (
                                                         client.status ==
-                                                        'Signed'
-                                                    );
-                                                })
-                                                .reduce(function (a, b) {
-                                                    return a + parseInt(b.gci);
-                                                }, 0) /
-                                                this.getExpectedIncome()) +
-                                        '%',
-                                    height: 15,
-                                    backgroundColor: global.primaryColor + '70',
-                                }}
-                            />
-
-                            <View
-                                style={{
-                                    width:
-                                        100 *
-                                            (this.props.clients
-                                                .filter((client) => {
-                                                    return (
-                                                        client.status ==
                                                         'Contract'
                                                     );
                                                 })
                                                 .reduce(function (a, b) {
                                                     return a + parseInt(b.gci);
                                                 }, 0) /
-                                                this.getExpectedIncome()) +
+                                                parseInt(this.props.goal)) +
                                         '%',
                                     height: 15,
                                     backgroundColor: global.redColor + '70',
@@ -326,13 +310,33 @@ class Clients extends React.Component {
                                                 .filter((client) => {
                                                     return (
                                                         client.status ==
+                                                        'Signed'
+                                                    );
+                                                })
+                                                .reduce(function (a, b) {
+                                                    return a + parseInt(b.gci);
+                                                }, 0) /
+                                                parseInt(this.props.goal)) +
+                                        '%',
+                                    height: 15,
+                                    backgroundColor: global.primaryColor + '70',
+                                }}
+                            />
+                            <View
+                                style={{
+                                    width:
+                                        100 *
+                                            (this.props.clients
+                                                .filter((client) => {
+                                                    return (
+                                                        client.status ==
                                                         'Closed'
                                                     );
                                                 })
                                                 .reduce(function (a, b) {
                                                     return a + parseInt(b.gci);
                                                 }, 0) /
-                                                this.getExpectedIncome()) +
+                                                parseInt(this.props.goal)) +
                                         '%',
                                     height: 15,
                                     backgroundColor: global.greenColor + '70',
@@ -375,13 +379,13 @@ class Clients extends React.Component {
 
                             <TouchableOpacity
                                 onPress={() => {
-                                    this.setState({ filter: 'Signed' });
+                                    this.setState({ filter: 'Contract' });
                                 }}
                             >
                                 <MenuTitle
-                                    text='Signed'
+                                    text='Contract'
                                     textDecoration={
-                                        this.state.filter == 'Signed'
+                                        this.state.filter == 'Contract'
                                             ? 'underline'
                                             : 'none'
                                     }
@@ -390,13 +394,13 @@ class Clients extends React.Component {
 
                             <TouchableOpacity
                                 onPress={() => {
-                                    this.setState({ filter: 'Contract' });
+                                    this.setState({ filter: 'Signed' });
                                 }}
                             >
                                 <MenuTitle
-                                    text='Contract'
+                                    text='Signed'
                                     textDecoration={
-                                        this.state.filter == 'Contract'
+                                        this.state.filter == 'Signed'
                                             ? 'underline'
                                             : 'none'
                                     }
@@ -428,207 +432,3 @@ class Clients extends React.Component {
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(Clients);
-
-const RowView = (item) => (
-    <View
-        style={{
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-        }}
-    >
-        {item.first}
-        {item.second}
-        {item.third}
-        {item.fourth}
-    </View>
-);
-
-const SmallestTitle = (item) => (
-    <Text
-        style={{
-            color: global.primaryColor,
-            fontWeight: 'bold',
-            fontSize: 15,
-        }}
-    >
-        {item.text}
-    </Text>
-);
-
-const SecondaryTitle = (item) => (
-    <Text
-        style={{
-            color: global.primaryColor,
-            fontSize: 15,
-        }}
-    >
-        {item.text}
-    </Text>
-);
-
-const MenuTitle = (item) => (
-    <Text
-        style={{
-            color: global.primaryColor,
-            fontWeight: 'bold',
-            paddingHorizontal: 5,
-            fontSize: 15,
-            textDecorationLine: item.textDecoration,
-        }}
-    >
-        {item.text}
-    </Text>
-);
-
-const Title = (item) => (
-    <Text
-        style={{
-            color: global.primaryColor,
-            fontWeight: 'bold',
-            fontSize: 25,
-        }}
-    >
-        {item.text}
-    </Text>
-);
-
-const Subtitle = (item) => (
-    <Text
-        style={{
-            color: global.secondaryColor,
-            fontWeight: 'bold',
-            fontSize: 25,
-        }}
-    >
-        {item.text}
-    </Text>
-);
-
-const DetailCard = (item) => (
-    <View
-        style={{
-            width: '100%',
-            backgroundColor: global.grayColor,
-            borderRadius: 10,
-            padding: 15,
-            marginTop: 20,
-            justifyContent: 'flex-start',
-            alignItems: 'flex-start',
-        }}
-    >
-        <RowView
-            first={
-                <View
-                    style={{
-                        padding: 5,
-                        borderRadius: 30,
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        backgroundColor:
-                            item.status == 'Signed'
-                                ? global.primaryColor
-                                : item.status == 'Closed'
-                                ? global.greenColor
-                                : global.redColor,
-                        width: 50,
-                        height: 50,
-                    }}
-                >
-                    <Text
-                        style={{
-                            color: 'white',
-                            fontSize: 20,
-                            fontWeight: 'bold',
-                        }}
-                    >
-                        {item.status == 'Signed'
-                            ? 'S'
-                            : item.status == 'Closed'
-                            ? 'Cl'
-                            : 'Co'}
-                    </Text>
-                </View>
-            }
-            second={
-                <View
-                    style={{
-                        flexDirection: 'row',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        maxWidth: '77%',
-                    }}
-                >
-                    <View
-                        style={{
-                            flexDirection: 'column',
-                            justifyContent: 'center',
-                            paddingLeft: 10,
-                            width: '77%',
-                        }}
-                    >
-                        <Text
-                            numberOfLines={1}
-                            style={{
-                                color: global.primaryColor,
-                                fontWeight: 'bold',
-                                fontSize: 15,
-                            }}
-                        >
-                            {item.address}
-                        </Text>
-
-                        <SecondaryTitle
-                            text={item.name + ' • ' + item.clientType}
-                        />
-
-                        <Text
-                            numberOfLines={1}
-                            style={{
-                                color: global.primaryColor,
-                                fontWeight: 'bold',
-                                fontSize: 15,
-                            }}
-                        >
-                            {'$' +
-                                numberWithCommas(item.gci) +
-                                ' • ' +
-                                item.agentName}
-                        </Text>
-                    </View>
-
-                    <TouchableOpacity
-                        style={{
-                            marginHorizontal: 30,
-                            padding: 15,
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            paddingVertical: 20,
-                        }}
-                        onPress={item.onPress}
-                    >
-                        <Text
-                            style={{
-                                color: global.primaryColor,
-                                fontWeight: 'bold',
-                            }}
-                        >
-                            Edit
-                        </Text>
-                    </TouchableOpacity>
-                </View>
-            }
-        />
-    </View>
-);
-
-const SmallerTitle = (item) => (
-    <Text
-        style={{
-            color: global.primaryColor,
-            fontWeight: 'bold',
-            fontSize: 15,
-        }}
-    >
-        {item.text}
-    </Text>
-);

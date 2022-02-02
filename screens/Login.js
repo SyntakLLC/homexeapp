@@ -65,45 +65,13 @@ class Login extends React.Component {
     };
 
     async componentDidMount() {
-        // This code is run whenever navigation comes to this screen
-        // this.props.navigation.addListener('focus', async () => {
+        this.storeAdmin('false');
         this.retrieveName();
         await isSignedIn()
             .then((res) => {
                 res ? this.props.navigation.navigate('Tabs') : {};
             })
             .catch((err) => {});
-        // });
-    }
-
-    onlyUnique(value, index, self) {
-        return self.indexOf(value) === index;
-    }
-
-    // opens the login modal
-    openModal() {
-        this.setState({
-            pickerOpen: true,
-        });
-
-        Animated.spring(this.state.loginModalTop, {
-            toValue: 150,
-            duration: 10000,
-            useNativeDriver: false,
-        }).start();
-    }
-
-    // CLOSES the login modal
-    closeModal() {
-        this.setState({
-            pickerOpen: false,
-        });
-
-        Animated.spring(this.state.loginModalTop, {
-            toValue: -global.screenHeight + 800,
-            duration: 10000,
-            useNativeDriver: false,
-        }).start();
     }
 
     // signs in
@@ -123,13 +91,20 @@ class Login extends React.Component {
                     // console.log(xhr.responseText);
                     try {
                         var name = JSON.parse(xhr.responseText).user.name;
+                        var admin = JSON.parse(xhr.responseText).user.admin;
+                        var id = JSON.parse(xhr.responseText).user.id;
                         var token = JSON.parse(xhr.responseText).token;
-                        this.storeToken(token);
 
+                        this.storeToken(token);
                         this.storeName(name);
-                        AsyncStorage.getItem(USER_KEY).then((res) => {});
+                        this.storeId(id);
+                        if (admin == 1) {
+                            this.storeAdmin('true');
+                        } else {
+                            this.storeAdmin('false');
+                        }
+
                         onSignIn();
-                        AsyncStorage.getItem(USER_KEY).then((res) => {});
                         this.props.updateName(name);
                         this.props.navigation.navigate('Tabs');
                         this.setState({ isLoggingIn: false });
@@ -159,7 +134,17 @@ class Login extends React.Component {
     // ................................................................
     // THE FOLLOWING FUNCTIONS ARE LOGIN/ASYNCSTORAGE RELATED FUNCTIONS
 
-    // stores the email into AsyncStorage
+    // stores the data into AsyncStorage
+    storeId = async (id) => {
+        try {
+            await AsyncStorage.setItem('id', id.toString());
+        } catch (error) {}
+    };
+    storeAdmin = async (admin) => {
+        try {
+            await AsyncStorage.setItem('admin', admin);
+        } catch (error) {}
+    };
     storeName = async (name) => {
         try {
             await AsyncStorage.setItem('name', name);

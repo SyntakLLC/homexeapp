@@ -12,8 +12,14 @@ import {
     Image,
 } from 'react-native';
 import moment from 'moment';
-import ActivityRings from 'react-native-activity-rings';
 import { connect } from 'react-redux';
+import {
+    Title,
+    GroupDetailCard,
+    RowView,
+    InfoBubble,
+    StatisticsBar,
+} from '../components/components';
 
 // Where we grab the redux name state
 function mapStateToProps(state) {
@@ -48,6 +54,19 @@ class Insights extends React.Component {
         sellers: [],
     };
 
+    componentDidMount() {
+        this.setState({
+            buyers: this.props.clients.filter((client) => {
+                return client.client_type == 'Buyer';
+            }),
+        });
+        this.setState({
+            sellers: this.props.clients.filter((client) => {
+                return client.client_type == 'Listing';
+            }),
+        });
+    }
+
     returnListingVolume(statusFilter) {
         var filteredListings = this.props.clients.filter((listing) => {
             return listing.status == statusFilter;
@@ -60,10 +79,6 @@ class Insights extends React.Component {
                     return parseInt(listing.gci);
                 })
                 .reduce((accumulator, curr) => accumulator + curr);
-    }
-
-    numberWithCommas(x) {
-        return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
     }
 
     render() {
@@ -94,7 +109,7 @@ class Insights extends React.Component {
                                 }
                                 actualValue={
                                     '$' +
-                                    this.numberWithCommas(
+                                    global.numberWithCommas(
                                         this.returnListingVolume('Closed'),
                                     )
                                 }
@@ -117,7 +132,7 @@ class Insights extends React.Component {
                                 ).toFixed(2)}
                                 actualValue={
                                     '$' +
-                                    this.numberWithCommas(
+                                    global.numberWithCommas(
                                         this.returnListingVolume('Contract'),
                                     )
                                 }
@@ -237,162 +252,3 @@ class Insights extends React.Component {
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(Insights);
-
-const RowView = (item) => (
-    <View
-        style={{
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-        }}
-    >
-        {item.first}
-        {item.second}
-    </View>
-);
-
-const SmallestTitle = (item) => (
-    <Text
-        style={{
-            color: global.primaryColor,
-            fontWeight: 'bold',
-            fontSize: 15,
-        }}
-    >
-        {item.text}
-    </Text>
-);
-
-const SmallerTitle = (item) => (
-    <Text
-        style={{
-            color: global.primaryColor,
-            fontWeight: 'bold',
-            fontSize: 15,
-        }}
-    >
-        {item.text}
-    </Text>
-);
-
-const Title = (item) => (
-    <Text
-        style={{
-            color: global.primaryColor,
-            fontWeight: 'bold',
-            fontSize: 25,
-        }}
-    >
-        {item.text}
-    </Text>
-);
-
-const GroupDetailCard = (item) => (
-    <View
-        style={{
-            width: '100%',
-            minHeight: 140,
-            backgroundColor: global.chartColor,
-            borderRadius: 25,
-            padding: 15,
-            marginTop: 20,
-            justifyContent: 'center',
-            alignItems: 'center',
-        }}
-    >
-        <View
-            style={{
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                transform: [{ scale: 0.8 }],
-            }}
-        >
-            {item.first}
-            {item.second}
-            {item.third}
-        </View>
-
-        {item.content}
-    </View>
-);
-
-const InfoBubble = (item) => (
-    <View
-        style={{
-            alignItems: 'center',
-            margin: 4,
-        }}
-    >
-        <SmallestTitle text={item.text} />
-        <ActivityRings
-            data={[
-                {
-                    value: (item.value / 100).clamp(0.01, 1),
-                    color:
-                        (item.value / 100).clamp(0.01, 1) > 0.5
-                            ? global.greenColor
-                            : global.redColor,
-                },
-            ]}
-            config={{
-                width: 100,
-                height: 100,
-                ringSize: 8,
-            }}
-        />
-        <SmallestTitle text={item.actualValue} />
-    </View>
-);
-const SingleDetailCard = (item) => (
-    <View
-        style={{
-            width: 160,
-            height: 160,
-            backgroundColor: global.chartColor,
-            borderRadius: 25,
-            padding: 15,
-            marginTop: 20,
-        }}
-    >
-        <View style={{ alignItems: 'center' }}>
-            <SmallerTitle text={item.text} />
-            <View>{item.content}</View>
-        </View>
-    </View>
-);
-
-const StatisticsBar = (item) => (
-    <View
-        style={{ width: '50%', marginBottom: 10, transform: [{ scale: 0.8 }] }}
-    >
-        <SmallestTitle text={item.text} />
-        <View
-            style={{
-                height: 10,
-            }}
-        />
-        {/*<View
-            style={{
-                width: '100%',
-                height: 15,
-                backgroundColor: '#fff',
-                borderRadius: 8,
-            }}
-        >
-            <View
-                style={{
-                    width: (item.value / item.max) * 100 + '%',
-                    height: 15,
-                    backgroundColor:
-                        (item.value / item.max) * 100 < 25
-                            ? global.redColor
-                            : (item.value / item.max) * 100 > 75
-                            ? global.greenColor
-                            : global.primaryColor,
-                    borderRadius: 8,
-                }}
-            />
-        </View>*/}
-        <Title text={item.value} />
-    </View>
-);

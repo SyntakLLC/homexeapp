@@ -12,8 +12,15 @@ import {
     Switch,
 } from 'react-native';
 import { connect } from 'react-redux';
+import {
+    Title,
+    LoginInput,
+    Picker,
+    AddJobText,
+    SelectButton,
+    Subtitle,
+} from '../components/components';
 import styled from 'styled-components';
-import axios from 'axios';
 
 // Where we grab the redux name state
 function mapStateToProps(state) {
@@ -56,9 +63,14 @@ class Plus extends React.Component {
         commission: 0,
         capped: false,
         address: '',
+        closingDateAvailable: false,
     };
 
     async addClient() {
+        if (!this.state.closingDateAvailable) {
+            this.state.closingDate = 'TBD';
+        }
+
         if (this.state.name == '') {
             Alert.alert('Hold on!', "Please fill out the client's name");
             return null;
@@ -94,6 +106,20 @@ class Plus extends React.Component {
 
             let cappedMultiplier = this.state.capped ? 1 : 0.8;
 
+            var gci = (gci =
+                this.state.salesPrice *
+                (this.state.commission / 100) *
+                0.55 *
+                cappedMultiplier);
+
+            if (this.state.clientType == 'Mass Offer Acquisition') {
+                gci = 4500;
+            }
+
+            if (this.state.clientType == 'Listing Handoff') {
+                gci = 1500;
+            }
+
             const data = {
                 name: this.state.name,
                 phoneNumber: '',
@@ -105,11 +131,7 @@ class Plus extends React.Component {
                 address: this.state.address,
                 closingDate: this.state.closingDate,
                 capped: this.state.capped,
-                gci:
-                    this.state.salesPrice *
-                    (this.state.commission / 100) *
-                    0.55 *
-                    cappedMultiplier,
+                gci: gci,
             };
 
             await fetch('https://homexe.win/api/client/create', {
@@ -145,8 +167,6 @@ class Plus extends React.Component {
 
     async refreshClients() {
         const token = await AsyncStorage.getItem('token');
-        const name = await AsyncStorage.getItem('name');
-        var clients = [];
         await fetch('https://homexe.win/client/get', {
             headers: new Headers({
                 Authorization: 'Bearer ' + token,
@@ -160,8 +180,21 @@ class Plus extends React.Component {
             });
     }
 
-    numberWithCommas(x) {
-        return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    returnListOfUsers() {
+        var users = [];
+        users.push(<Picker.Item label='Select Employee' value='NONE' />);
+        var testData = [
+            'Tyler Scaglione',
+            'Christian Molina',
+            'David Tran',
+            'Jamie Dodd',
+        ];
+
+        for (let i = 0; i < testData.length; i++) {
+            users.push(<Picker.Item label={testData[i]} value={testData[i]} />);
+        }
+
+        return users;
     }
 
     render() {
@@ -181,16 +214,19 @@ class Plus extends React.Component {
                         <Title text='Add Client' />
                     </View>
 
-                    <View
+                    <FormSection
                         style={{
-                            width: '100%',
-                            paddingBottom: 40,
                             backgroundColor: global.chartColor,
-                            alignItems: 'center',
-                            paddingTop: 10,
-                            borderRadius: 20,
                         }}
                     >
+                        <FormHeader
+                            style={{
+                                color: global.primaryColor,
+                            }}
+                        >
+                            Details
+                        </FormHeader>
+
                         <LoginInput
                             style={{
                                 backgroundColor: '#fff',
@@ -205,33 +241,6 @@ class Plus extends React.Component {
                                 this.setState({ name: val });
                             }}
                         />
-                        {/*<LoginInput
-                            style={{
-                                backgroundColor: '#fff',
-                            }}
-                            value={this.state.phoneNumber}
-                            placeholder='PHONE NUMBER'
-                            keyboardType='numeric'
-                            fontWeight='bold'
-                            autoCorrect={false}
-                            placeholderTextColor='#11182750'
-                            onChangeText={(val) => {
-                                this.setState({ phoneNumber: val });
-                            }}
-                        />
-                        <LoginInput
-                            style={{
-                                backgroundColor: '#fff',
-                            }}
-                            value={this.state.email}
-                            placeholder='EMAIL'
-                            fontWeight='bold'
-                            autoCorrect={false}
-                            placeholderTextColor='#11182750'
-                            onChangeText={(val) => {
-                                this.setState({ email: val });
-                            }}
-                        />*/}
                         <LoginInput
                             style={{
                                 backgroundColor: '#fff',
@@ -245,6 +254,20 @@ class Plus extends React.Component {
                                 this.setState({ address: val });
                             }}
                         />
+                    </FormSection>
+
+                    <FormSection
+                        style={{
+                            backgroundColor: global.chartColor,
+                        }}
+                    >
+                        <FormHeader
+                            style={{
+                                color: global.primaryColor,
+                            }}
+                        >
+                            Tags
+                        </FormHeader>
 
                         <Picker
                             selectedValue={this.state.clientType}
@@ -258,6 +281,14 @@ class Plus extends React.Component {
                             />
                             <Picker.Item label='Listing' value='Listing' />
                             <Picker.Item label='Buyer' value='Buyer' />
+                            <Picker.Item
+                                label='Mass Offer Acquisition'
+                                value='Mass Offer Acquisition'
+                            />
+                            <Picker.Item
+                                label='Listing Handoff'
+                                value='Listing Handoff'
+                            />
                         </Picker>
 
                         <Picker
@@ -272,7 +303,158 @@ class Plus extends React.Component {
                             <Picker.Item label='Closed' value='Closed' />
                         </Picker>
 
-                        {this.state.status == 'Contract' ? (
+                        <Picker
+                            selectedValue={this.state.status}
+                            onValueChange={(itemValue) =>
+                                this.setState({ status: itemValue })
+                            }
+                        >
+                            {this.returnListOfUsers()}
+                        </Picker>
+                    </FormSection>
+
+                    <FormSection
+                        style={{
+                            backgroundColor: global.chartColor,
+                        }}
+                    >
+                        <FormHeader
+                            style={{
+                                color: global.primaryColor,
+                            }}
+                        >
+                            Commission
+                        </FormHeader>
+                        <LoginInput
+                            style={{
+                                backgroundColor: '#fff',
+                            }}
+                            value={this.state.salesPrice}
+                            keyboardType='numeric'
+                            placeholder={
+                                this.state.clientType ==
+                                'Mass Offer Acquisition'
+                                    ? 'PURCHASE PRICE'
+                                    : 'SALES PRICE'
+                            }
+                            fontWeight='bold'
+                            autoCorrect={false}
+                            placeholderTextColor='#11182750'
+                            onChangeText={(val) => {
+                                this.setState({ salesPrice: val });
+                            }}
+                        />
+
+                        {this.state.clientType != 'Mass Offer Acquisition' &&
+                        this.state.clientType !== 'Listing Handoff' ? (
+                            <LoginInput
+                                style={{
+                                    backgroundColor: '#fff',
+                                }}
+                                value={this.state.commission}
+                                keyboardType='numeric'
+                                placeholder='COMMISSION % (i.e. 20)'
+                                fontWeight='bold'
+                                autoCorrect={false}
+                                placeholderTextColor='#11182750'
+                                onChangeText={(val) => {
+                                    this.setState({ commission: val });
+                                }}
+                            />
+                        ) : (
+                            <View />
+                        )}
+
+                        {this.state.clientType != 'Mass Offer Acquisition' &&
+                        this.state.clientType !== 'Listing Handoff' ? (
+                            <View
+                                style={{
+                                    width: '85%',
+                                    flexDirection: 'row',
+                                    alignItems: 'center',
+                                    justifyContent: 'space-between',
+                                    paddingVertical: 10,
+                                }}
+                            >
+                                <Text
+                                    style={{
+                                        paddingRight: 20,
+                                        fontSize: 17,
+                                        color: global.primaryColor,
+                                        fontWeight: 'bold',
+                                    }}
+                                >
+                                    CAPPED?
+                                </Text>
+
+                                <Switch
+                                    trackColor={{
+                                        false: '#767577',
+                                        true: global.primaryColor,
+                                    }}
+                                    onValueChange={(val) =>
+                                        this.setState({ capped: val })
+                                    }
+                                    value={this.state.capped}
+                                />
+                            </View>
+                        ) : (
+                            <View />
+                        )}
+
+                        <View
+                            style={{
+                                width: '85%',
+                                paddingVertical: 10,
+                            }}
+                        >
+                            <View
+                                style={{
+                                    flexDirection: 'row',
+                                    alignItems: 'center',
+                                    justifyContent: 'space-between',
+                                }}
+                            >
+                                <Text
+                                    style={{
+                                        paddingRight: 20,
+                                        fontSize: 17,
+                                        color: global.primaryColor,
+                                        fontWeight: 'bold',
+                                    }}
+                                >
+                                    CLOSING DATE AVAILABLE
+                                </Text>
+
+                                <Switch
+                                    trackColor={{
+                                        false: '#767577',
+                                        true: global.primaryColor,
+                                    }}
+                                    onValueChange={(val) =>
+                                        this.setState({
+                                            closingDateAvailable: val,
+                                        })
+                                    }
+                                    value={this.state.closingDateAvailable}
+                                />
+                            </View>
+
+                            <Text
+                                style={{
+                                    maxWidth: '80%',
+                                    paddingRight: 20,
+                                    fontSize: 12,
+                                    color: global.primaryColor,
+                                    fontWeight: 'normal',
+                                }}
+                            >
+                                Leave this off if you want your closing date to
+                                be TBD
+                            </Text>
+                        </View>
+
+                        {this.state.closingDateAvailable ? (
                             <LoginInput
                                 style={{
                                     backgroundColor: '#fff',
@@ -290,74 +472,13 @@ class Plus extends React.Component {
                             <View />
                         )}
 
-                        <LoginInput
-                            style={{
-                                backgroundColor: '#fff',
-                            }}
-                            value={this.state.salesPrice}
-                            keyboardType='numeric'
-                            placeholder='SALES PRICE'
-                            fontWeight='bold'
-                            autoCorrect={false}
-                            placeholderTextColor='#11182750'
-                            onChangeText={(val) => {
-                                this.setState({ salesPrice: val });
-                            }}
-                        />
-
-                        <LoginInput
-                            style={{
-                                backgroundColor: '#fff',
-                            }}
-                            value={this.state.commission}
-                            keyboardType='numeric'
-                            placeholder='COMMISSION % (i.e. 20)'
-                            fontWeight='bold'
-                            autoCorrect={false}
-                            placeholderTextColor='#11182750'
-                            onChangeText={(val) => {
-                                this.setState({ commission: val });
-                            }}
-                        />
-
-                        <View
-                            style={{
-                                width: '85%',
-                                flexDirection: 'row',
-                                alignItems: 'center',
-                                justifyContent: 'space-between',
-                                paddingVertical: 10,
-                            }}
-                        >
-                            <Text
-                                style={{
-                                    paddingRight: 20,
-                                    fontSize: 17,
-                                    color: global.primaryColor,
-                                    fontWeight: 'bold',
-                                }}
-                            >
-                                CAPPED?
-                            </Text>
-
-                            <Switch
-                                trackColor={{
-                                    false: '#767577',
-                                    true: global.primaryColor,
-                                }}
-                                onValueChange={(val) =>
-                                    this.setState({ capped: val })
-                                }
-                                value={this.state.capped}
-                            />
-                        </View>
-
                         <TouchableOpacity
                             onPress={() => {
                                 this.addClient();
                             }}
                             style={{
-                                top: 20,
+                                marginTop: 20,
+                                marginBottom: 10,
                                 height: 40,
                                 width: '90%',
                                 alignSelf: 'center',
@@ -370,7 +491,7 @@ class Plus extends React.Component {
                                 <AddJobText>Add Client</AddJobText>
                             </SelectButton>
                         </TouchableOpacity>
-                    </View>
+                    </FormSection>
 
                     <View
                         style={{
@@ -388,55 +509,16 @@ class Plus extends React.Component {
 
 export default connect(mapStateToProps, mapDispatchToProps)(Plus);
 
-const Title = (item) => (
-    <Text
-        style={{
-            color: global.primaryColor,
-            fontWeight: 'bold',
-            fontSize: 25,
-        }}
-    >
-        {item.text}
-    </Text>
-);
-
-const LoginInput = styled.TextInput`
-    height: 40px;
-    border-radius: 20px;
-    background-color: rgb(230, 230, 230);
-    width: 90%;
-    padding-left: 20px;
-    margin-top: 10px;
-    color: #111827;
-    margin-bottom: 10px;
-`;
-
-const Picker = styled.Picker`
-    height: 220px;
-    border-radius: 20px;
-    background-color: white;
-    width: 90%;
-    padding-left: 20px;
-    margin-top: 10px;
-    color: #111827;
-    margin-bottom: 10px;
-    overflow: hidden;
-`;
-
-const SelectButton = styled.View`
-    height: 50px;
-    width: 94%;
-    flex: 1;
-    color: white;
+const FormSection = styled.View`
+    width: 100%;
     align-items: center;
-    justify-content: center;
-    border-radius: 10px;
+    margin-bottom: 20px;
+    padding-vertical: 10px;
+    border-radius: 20px;
 `;
 
-const AddJobText = styled.Text`
+const FormHeader = styled.Text`
     font-weight: 700;
-    font-size: 17px;
-    color: white;
-    text-align: center;
-    line-height: 22px;
+    font-size: 20px;
+    padding-vertical: 5px;
 `;

@@ -9,7 +9,7 @@ import { AsyncStorage } from 'react-native';
 
 // AsyncStorage stuff regarding the login status:
 const USER_KEY = 'auth-key-csv';
-isSignedIn = () => {
+isSignedIn = async () => {
     return new Promise((resolve, reject) => {
         AsyncStorage.getItem(USER_KEY)
             .then((res) => {
@@ -28,7 +28,7 @@ export default class App extends React.Component {
         return (
             <NavigationContainer>
                 <Stack.Navigator
-                    initialRouteName={isSignedIn() ? 'Tabs' : 'Login'}
+                    initialRouteName={'Login'}
                     screenOptions={({ route }) => ({
                         headerShown: false,
                     })}

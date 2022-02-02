@@ -99,93 +99,61 @@ class Users extends React.Component {
             <View>
                 {this.returnLoadingIfSwitchingUsers()}
 
-                <SafeAreaView
-                    style={{
-                        paddingHorizontal: 8,
-                        backgroundColor: '#fff',
-                        height: Dimensions.get('window').height,
-                    }}
-                >
-                    <ScrollView
-                        style={{ paddingHorizontal: 16 }}
-                        contentContainerStyle={{ paddingBottom: 120 }}
-                    >
-                        <View style={tailwind('mt-6 mb-4 flex-col')}>
-                            <Title text={'Hi, ' + this.props.name} />
-                        </View>
+                <ScrollView>
+                    <RowView
+                        first={
+                            <TouchableOpacity
+                                onPress={() => {
+                                    this.changeNameTo('Tyler Scaglione');
+                                }}
+                            >
+                                <CategoryButton
+                                    reduxName={this.props.name}
+                                    text='Tyler Scaglione'
+                                />
+                            </TouchableOpacity>
+                        }
+                        second={
+                            <TouchableOpacity
+                                onPress={() => {
+                                    this.changeNameTo('David Tran');
+                                }}
+                            >
+                                <CategoryButton
+                                    reduxName={this.props.name}
+                                    text='David Tran'
+                                />
+                            </TouchableOpacity>
+                        }
+                    />
 
-                        {/*<RowView
-                            first={
-                                <TouchableOpacity
-                                    onPress={() => {
-                                        this.changeNameTo('Tyler Scaglione');
-                                    }}
-                                >
-                                    <CategoryButton
-                                        reduxName={this.props.name}
-                                        text='Tyler Scaglione'
-                                    />
-                                </TouchableOpacity>
-                            }
-                            second={
-                                <TouchableOpacity
-                                    onPress={() => {
-                                        this.changeNameTo('David Tran');
-                                    }}
-                                >
-                                    <CategoryButton
-                                        reduxName={this.props.name}
-                                        text='David Tran'
-                                    />
-                                </TouchableOpacity>
-                            }
-                        />
-
-                        <RowView
-                            first={
-                                <TouchableOpacity
-                                    onPress={() => {
-                                        this.changeNameTo('Jamie Dodd');
-                                    }}
-                                >
-                                    <CategoryButton
-                                        reduxName={this.props.name}
-                                        text='Jamie Dodd'
-                                    />
-                                </TouchableOpacity>
-                            }
-                            second={
-                                <TouchableOpacity
-                                    onPress={() => {
-                                        this.changeNameTo('Christian Molina');
-                                    }}
-                                >
-                                    <CategoryButton
-                                        reduxName={this.props.name}
-                                        text='Christian Molina'
-                                    />
-                                </TouchableOpacity>
-                            }
-                        />*/}
-
-                        <TouchableOpacity
-                            style={{
-                                width: '100%',
-                                alignItems: 'center',
-                                marginTop: 20,
-                            }}
-                            onPress={() => {
-                                onSignOut();
-                                this.props.navigation.navigate('Login');
-                            }}
-                        >
-                            <LogoutButton
-                                reduxName={this.props.name}
-                                text='Logout'
-                            />
-                        </TouchableOpacity>
-                    </ScrollView>
-                </SafeAreaView>
+                    <RowView
+                        first={
+                            <TouchableOpacity
+                                onPress={() => {
+                                    this.changeNameTo('Jamie Dodd');
+                                }}
+                            >
+                                <CategoryButton
+                                    reduxName={this.props.name}
+                                    text='Jamie Dodd'
+                                />
+                            </TouchableOpacity>
+                        }
+                        second={
+                            <TouchableOpacity
+                                onPress={() => {
+                                    this.changeNameTo('Christian Molina');
+                                }}
+                            >
+                                <CategoryButton
+                                    reduxName={this.props.name}
+                                    text='Christian Molina'
+                                />
+                            </TouchableOpacity>
+                        }
+                    />
+                </ScrollView>
             </View>
         );
     }

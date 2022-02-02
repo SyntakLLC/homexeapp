@@ -4,6 +4,7 @@ import {
     Dimensions,
     Platform,
     TouchableOpacity,
+    Text,
     AsyncStorage,
 } from 'react-native';
 import {
@@ -78,6 +79,11 @@ function mapDispatchToProps(dispatch) {
                 type: 'UPDATE_LINE_CHART_DATA',
                 lineChartData,
             }),
+        updateGoal: (goal) =>
+            dispatch({
+                type: 'UPDATE_GOAL',
+                goal,
+            }),
     };
 }
 
@@ -100,8 +106,6 @@ class ClientStack extends React.Component {
 class Tabs extends React.Component {
     async getCalls() {
         const token = await AsyncStorage.getItem('token');
-        const name = await AsyncStorage.getItem('name');
-        var calls = [];
         await fetch('https://homexe.win/api/call/get', {
             headers: new Headers({
                 Authorization: 'Bearer ' + token,
@@ -117,8 +121,6 @@ class Tabs extends React.Component {
 
     async getAppointments() {
         const token = await AsyncStorage.getItem('token');
-        const name = await AsyncStorage.getItem('name');
-        var appts = [];
         await fetch('https://homexe.win/api/appointment/get', {
             headers: new Headers({
                 Authorization: 'Bearer ' + token,
@@ -134,8 +136,6 @@ class Tabs extends React.Component {
 
     async getClients() {
         const token = await AsyncStorage.getItem('token');
-        const name = await AsyncStorage.getItem('name');
-        var clients = [];
         await fetch('https://homexe.win/client/get', {
             headers: new Headers({
                 Authorization: 'Bearer ' + token,
@@ -151,8 +151,6 @@ class Tabs extends React.Component {
 
     async getListings() {
         const token = await AsyncStorage.getItem('token');
-        const name = await AsyncStorage.getItem('name');
-        var listings = [];
         await fetch('https://homexe.win/listing/get', {
             headers: new Headers({
                 Authorization: 'Bearer ' + token,
@@ -168,8 +166,6 @@ class Tabs extends React.Component {
 
     async getLineChartData() {
         const token = await AsyncStorage.getItem('token');
-        const name = await AsyncStorage.getItem('name');
-        var listings = [];
         await fetch('https://homexe.win/api/chart/get', {
             headers: new Headers({
                 Authorization: 'Bearer ' + token,
@@ -183,12 +179,29 @@ class Tabs extends React.Component {
             });
     }
 
-    componentDidMount() {
+    async getGoal() {
+        const token = await AsyncStorage.getItem('token');
+        await fetch('https://homexe.win/api/goal/get', {
+            headers: new Headers({
+                Authorization: 'Bearer ' + token,
+                'Content-Type': 'application/json',
+                Accept: 'application/json',
+            }),
+        })
+            .then((response) => response.json())
+            .then((data) => {
+                console.log(data.toString());
+                this.props.updateGoal(data.toString());
+            });
+    }
+
+    async componentDidMount() {
         this.getCalls();
         this.getAppointments();
         this.getClients();
         this.getListings();
         this.getLineChartData();
+        this.getGoal();
     }
 
     render() {
@@ -205,12 +218,32 @@ class Tabs extends React.Component {
                 <Tab.Screen name='Insights' component={Insights} />
                 <Tab.Screen name='NewDashboard' component={NewDashboard} />
                 <Tab.Screen name='Clients' component={ClientStack} />
+                <Tab.Screen name='Users' component={Users} />
             </Tab.Navigator>
         );
     }
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(Tabs);
+
+function returnTabWidth() {
+    var thing = 'xx';
+    userIsAdmin().then((res) => {
+        if (res) {
+            thing = '16.6%';
+        } else {
+            thing = '20%';
+        }
+    });
+
+    return thing;
+}
+
+function userIsAdmin() {
+    // var res = (await AsyncStorage.getItem('admin')) == 'true';
+    return false;
+    return res;
+}
 
 const TabBar = (item) => (
     <View
@@ -226,7 +259,7 @@ const TabBar = (item) => (
         <TouchableOpacity
             style={{
                 display: 'flex',
-                width: '20%',
+                width: userIsAdmin() ? '16.6%' : '20%',
                 alignItems: 'center',
             }}
             onPress={() => item.navigation.navigate('NewDashboard')}
@@ -237,7 +270,7 @@ const TabBar = (item) => (
         <TouchableOpacity
             style={{
                 display: 'flex',
-                width: '20%',
+                width: userIsAdmin() ? '16.6%' : '20%',
                 alignItems: 'center',
             }}
             onPress={() => item.navigation.navigate('Statistics')}
@@ -248,7 +281,7 @@ const TabBar = (item) => (
         <TouchableOpacity
             style={{
                 display: 'flex',
-                width: '20%',
+                width: userIsAdmin() ? '16.6%' : '20%',
                 alignItems: 'center',
             }}
             onPress={() => item.navigation.navigate('Plus')}
@@ -259,7 +292,7 @@ const TabBar = (item) => (
         <TouchableOpacity
             style={{
                 display: 'flex',
-                width: '20%',
+                width: userIsAdmin() ? '16.6%' : '20%',
                 alignItems: 'center',
             }}
             onPress={() => item.navigation.navigate('Insights')}
@@ -270,7 +303,7 @@ const TabBar = (item) => (
         <TouchableOpacity
             style={{
                 display: 'flex',
-                width: '20%',
+                width: userIsAdmin() ? '16.6%' : '20%',
                 alignItems: 'center',
             }}
             onPress={() => item.navigation.navigate('Clients')}
@@ -281,7 +314,7 @@ const TabBar = (item) => (
         {/*<TouchableOpacity
             style={{
                 display: 'flex',
-                width: '25%',
+                width: userIsAdmin() ? '16.6%' : '20%',
                 alignItems: 'center',
             }}
             onPress={() => item.navigation.navigate('Users')}

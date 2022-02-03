@@ -19,6 +19,10 @@ This is the companion app to the Homexe Win software I designed. It offers a mob
 
 This app is the mobile interface of the Homexe Win website.
 
+<img src="https://i.imgur.com/EbrWybu.png" align="left" height="541" width="250" >
+<img src="https://i.imgur.com/0NNRntJ.png" align="left" height="541" width="250" >
+<img src="https://i.imgur.com/1WHJSCC.png" height="541" width="250" >
+
 ## What is Homexe Win?
 
 Homexe Win is a software I designed for the Homexe Realty team at Cameron Prestige. The team had struggled with motivation in cold-calling and scheduling meetings, so they requested a tool that would do two things:
@@ -27,11 +31,6 @@ Homexe Win is a software I designed for the Homexe Realty team at Cameron Presti
 2. Extrapolate that data into an estimated commission-based income that the agent could expect if they continue at their current average.
 
 Homexe Win displays this data as a trackable chart, allowing agents to monitor their progress.
-
-![](https://i.imgur.com/EbrWybu.png =250x541)
-![](https://i.imgur.com/0NNRntJ.png =250x541)
-![](https://i.imgur.com/1WHJSCC.png =250x541)
-
 
 ## How Does it Work?
 

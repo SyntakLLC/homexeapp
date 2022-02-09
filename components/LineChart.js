@@ -221,7 +221,7 @@ class LineChartComponent extends React.Component {
         ];
 
         let now = moment().format('MMMM');
-        let n = months.indexOf(now.toString()) + 2;
+        let n = months.indexOf(now.substring(0, 3).toString()) + 1;
         months = this.arrayRotate(months, false, n);
         if (months.length - limit == months.length) {
             return months;

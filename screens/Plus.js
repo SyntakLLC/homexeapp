@@ -58,6 +58,7 @@ class Plus extends React.Component {
         email: '',
         status: 'Select Status',
         clientType: 'Select Client Type',
+        employee: 'Select Employee',
         gci: 0,
         salesPrice: 0,
         commission: 0,
@@ -92,7 +93,7 @@ class Plus extends React.Component {
         } else if (this.state.salesPrice == 0) {
             Alert.alert('Hold on!', 'Please fill out the sales price');
             return null;
-        } else if (this.state.commission == 0) {
+        } else if (this.state.commission == 0 && this.state.salesPrice == 0) {
             Alert.alert('Hold on!', 'Please fill out the commission');
             return null;
         } else {
@@ -126,7 +127,10 @@ class Plus extends React.Component {
                 email: '',
                 status: this.state.status,
                 clientType: this.state.clientType,
-                user_name: name,
+                user_name:
+                    this.state.employee == 'Select Employee'
+                        ? name
+                        : this.state.employee,
                 salesPrice: this.state.salesPrice,
                 address: this.state.address,
                 closingDate: this.state.closingDate,
@@ -152,6 +156,7 @@ class Plus extends React.Component {
                     this.setState({ email: '' });
                     this.setState({ status: 'Select Status' });
                     this.setState({ client_type: 'Select Client Type' });
+                    this.setState({ employee: 'Select Employee' });
                     this.setState({ gci: 0 });
                     this.setState({ salesPrice: 0 });
                     this.setState({ address: 0 });
@@ -304,9 +309,9 @@ class Plus extends React.Component {
                         </Picker>
 
                         <Picker
-                            selectedValue={this.state.status}
+                            selectedValue={this.state.employee}
                             onValueChange={(itemValue) =>
-                                this.setState({ status: itemValue })
+                                this.setState({ employee: itemValue })
                             }
                         >
                             {this.returnListOfUsers()}

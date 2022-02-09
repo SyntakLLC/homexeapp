@@ -151,6 +151,14 @@ class NewDashboard extends React.Component {
         }
     }
 
+    returnGoalPercentage() {
+        let percentage =
+            this.props.lineChartData[this.props.lineChartData.length - 1] /
+            parseInt(this.props.goal);
+
+        return percentage > 1 ? 1.0 : percentage;
+    }
+
     render() {
         return (
             <SafeAreaView
@@ -212,30 +220,9 @@ class NewDashboard extends React.Component {
                                             <ActivityRings
                                                 data={[
                                                     {
-                                                        value:
-                                                            this.props
-                                                                .lineChartData[
-                                                                this.props
-                                                                    .lineChartData
-                                                                    .length - 1
-                                                            ] /
-                                                            parseInt(
-                                                                this.props.goal,
-                                                            ),
+                                                        value: this.returnGoalPercentage(),
                                                         color:
-                                                            this.props
-                                                                .lineChartData[
-                                                                this.props
-                                                                    .lineChartData
-                                                                    .length - 1
-                                                            ] /
-                                                                this.props
-                                                                    .lineChartData[
-                                                                    this.props
-                                                                        .lineChartData
-                                                                        .length -
-                                                                        2
-                                                                ] >=
+                                                            this.returnGoalPercentage() >=
                                                             0.5
                                                                 ? global.greenColor
                                                                 : global.redColor,

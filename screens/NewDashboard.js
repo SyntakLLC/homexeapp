@@ -71,6 +71,11 @@ function mapDispatchToProps(dispatch) {
                 type: 'UPDATE_LISTINGS',
                 listings,
             }),
+        updateLineChartData: (lineChartData) =>
+            dispatch({
+                type: 'UPDATE_LINE_CHART_DATA',
+                lineChartData,
+            }),
         updateGoal: (goal) =>
             dispatch({
                 type: 'UPDATE_GOAL',
@@ -159,6 +164,97 @@ class NewDashboard extends React.Component {
         return percentage > 1 ? 1.0 : percentage;
     }
 
+    storeToken = async (token) => {
+        try {
+            await AsyncStorage.setItem('token', token);
+        } catch (error) {}
+    };
+
+    switchUserTo = async (name) => {
+        try {
+            await AsyncStorage.setItem('name', name);
+            this.refreshData();
+        } catch (error) {}
+    };
+
+    async refreshData() {
+        const token = await AsyncStorage.getItem('token');
+        const name = await AsyncStorage.getItem('name');
+
+        await fetch('https://homexe.win/api/chart/get', {
+            headers: new Headers({
+                Authorization: 'Bearer ' + token,
+                'Content-Type': 'application/json',
+                Accept: 'application/json',
+            }),
+        })
+            .then((response) => response.json())
+            .then((data) => {
+                this.props.updateLineChartData(data[name]);
+            });
+
+        await fetch('https://homexe.win/api/call/get', {
+            headers: new Headers({
+                Authorization: 'Bearer ' + token,
+                'Content-Type': 'application/json',
+                Accept: 'application/json',
+            }),
+        })
+            .then((response) => response.json())
+            .then((data) => {
+                this.props.updateCalls(data[name]);
+            });
+
+        await fetch('https://homexe.win/api/appointment/get', {
+            headers: new Headers({
+                Authorization: 'Bearer ' + token,
+                'Content-Type': 'application/json',
+                Accept: 'application/json',
+            }),
+        })
+            .then((response) => response.json())
+            .then((data) => {
+                this.props.updateAppointments(data[name]);
+            });
+
+        await fetch('https://homexe.win/client/get', {
+            headers: new Headers({
+                Authorization: 'Bearer ' + token,
+                'Content-Type': 'application/json',
+                Accept: 'application/json',
+            }),
+        })
+            .then((response) => response.json())
+            .then((data) => {
+                this.props.updateClients(data[name]);
+            });
+
+        await fetch('https://homexe.win/listing/get', {
+            headers: new Headers({
+                Authorization: 'Bearer ' + token,
+                'Content-Type': 'application/json',
+                Accept: 'application/json',
+            }),
+        })
+            .then((response) => response.json())
+            .then((data) => {
+                this.props.updateListings(data[name]);
+            });
+
+        await fetch('https://homexe.win/api/goal/get', {
+            headers: new Headers({
+                Authorization: 'Bearer ' + token,
+                'Content-Type': 'application/json',
+                Accept: 'application/json',
+            }),
+        })
+            .then((response) => response.json())
+            .then((data) => {
+                console.log(data.toString()[name]);
+                this.props.updateGoal(data.toString());
+            });
+    }
+
     render() {
         return (
             <SafeAreaView
@@ -173,11 +269,6 @@ class NewDashboard extends React.Component {
                     style={{ paddingHorizontal: 16 }}
                     contentContainerStyle={{ paddingBottom: 120 }}
                 >
-                    {/*<View style={tailwind('mt-6 mb-4 flex-col')}>
-                        <Title text='WELCOME!' />
-                        <Subtitle text={this.props.name} />
-                    </View>*/}
-
                     <View style={tailwind('mt-6 mb-4 flex-col')}>
                         <StockPrice
                             text={
@@ -476,7 +567,30 @@ class NewDashboard extends React.Component {
                         />
                     </TouchableOpacity>
 
-                    {/*<Users />*/}
+                    <SwitchUserButton
+                        user='Tyler'
+                        onPress={() => {
+                            this.switchUserTo('Tyler Scaglione');
+                        }}
+                    />
+                    <SwitchUserButton
+                        user='David'
+                        onPress={() => {
+                            this.switchUserTo('David Tran');
+                        }}
+                    />
+                    <SwitchUserButton
+                        user='Christian'
+                        onPress={() => {
+                            this.switchUserTo('Christian Molina');
+                        }}
+                    />
+                    <SwitchUserButton
+                        user='Jamie'
+                        onPress={() => {
+                            this.switchUserTo('Jamie Dodd');
+                        }}
+                    />
                 </ScrollView>
             </SafeAreaView>
         );
@@ -484,3 +598,20 @@ class NewDashboard extends React.Component {
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(NewDashboard);
+
+const SwitchUserButton = (props) => {
+    return (
+        <TouchableOpacity
+            style={{
+                width: '100%',
+                alignItems: 'center',
+                marginTop: 8,
+            }}
+            onPress={() => {
+                props.onPress();
+            }}
+        >
+            <LogoutButton text={`Switch to ${props.user.split(' ')}`} />
+        </TouchableOpacity>
+    );
+};

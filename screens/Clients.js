@@ -17,6 +17,7 @@ import { connect } from 'react-redux';
 import {
     Title,
     SmallerTitle,
+    SmallestTitle,
     RowView,
     MenuTitle,
     ClientCard,

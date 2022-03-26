@@ -106,6 +106,7 @@ class ClientStack extends React.Component {
 class Tabs extends React.Component {
     async getCalls() {
         const token = await AsyncStorage.getItem('token');
+        const name = await AsyncStorage.getItem('name');
         await fetch('https://homexe.win/api/call/get', {
             headers: new Headers({
                 Authorization: 'Bearer ' + token,
@@ -115,12 +116,13 @@ class Tabs extends React.Component {
         })
             .then((response) => response.json())
             .then((data) => {
-                this.props.updateCalls(data);
+                this.props.updateCalls(data[name]);
             });
     }
 
     async getAppointments() {
         const token = await AsyncStorage.getItem('token');
+        const name = await AsyncStorage.getItem('name');
         await fetch('https://homexe.win/api/appointment/get', {
             headers: new Headers({
                 Authorization: 'Bearer ' + token,
@@ -130,12 +132,13 @@ class Tabs extends React.Component {
         })
             .then((response) => response.json())
             .then((data) => {
-                this.props.updateAppointments(data);
+                this.props.updateAppointments(data[name]);
             });
     }
 
     async getClients() {
         const token = await AsyncStorage.getItem('token');
+        const name = await AsyncStorage.getItem('name');
         await fetch('https://homexe.win/client/get', {
             headers: new Headers({
                 Authorization: 'Bearer ' + token,
@@ -145,12 +148,13 @@ class Tabs extends React.Component {
         })
             .then((response) => response.json())
             .then((data) => {
-                this.props.updateClients(data);
+                this.props.updateClients(data[name]);
             });
     }
 
     async getListings() {
         const token = await AsyncStorage.getItem('token');
+        const name = await AsyncStorage.getItem('name');
         await fetch('https://homexe.win/listing/get', {
             headers: new Headers({
                 Authorization: 'Bearer ' + token,
@@ -160,12 +164,13 @@ class Tabs extends React.Component {
         })
             .then((response) => response.json())
             .then((data) => {
-                this.props.updateListings(data);
+                this.props.updateListings(data[name]);
             });
     }
 
     async getLineChartData() {
         const token = await AsyncStorage.getItem('token');
+        const name = await AsyncStorage.getItem('name');
         await fetch('https://homexe.win/api/chart/get', {
             headers: new Headers({
                 Authorization: 'Bearer ' + token,
@@ -175,12 +180,13 @@ class Tabs extends React.Component {
         })
             .then((response) => response.json())
             .then((data) => {
-                this.props.updateLineChartData(data);
+                this.props.updateLineChartData(data[name]);
             });
     }
 
     async getGoal() {
         const token = await AsyncStorage.getItem('token');
+        const name = await AsyncStorage.getItem('name');
         await fetch('https://homexe.win/api/goal/get', {
             headers: new Headers({
                 Authorization: 'Bearer ' + token,
@@ -190,7 +196,7 @@ class Tabs extends React.Component {
         })
             .then((response) => response.json())
             .then((data) => {
-                console.log(data.toString());
+                console.log(data.toString()[name]);
                 this.props.updateGoal(data.toString());
             });
     }

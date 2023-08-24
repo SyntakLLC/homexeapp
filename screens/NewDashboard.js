@@ -591,6 +591,18 @@ class NewDashboard extends React.Component {
                             this.switchUserTo('Jamie Dodd');
                         }}
                     />
+                    <SwitchUserButton
+                        user='Jared'
+                        onPress={() => {
+                            this.switchUserTo('Jared Venezia');
+                        }}
+                    />
+                    <SwitchUserButton
+                        user='John'
+                        onPress={() => {
+                            this.switchUserTo('John Kyle');
+                        }}
+                    />
                 </ScrollView>
             </SafeAreaView>
         );

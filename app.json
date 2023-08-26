@@ -1,24 +1,29 @@
 {
-    "expo": {
-        "name": "Homexe.win",
-        "slug": "homexeapp",
-        "version": "2.1.6",
-        "orientation": "portrait",
-        "icon": "./assets/icon.png",
-        "splash": {
-            "resizeMode": "contain",
-            "backgroundColor": "#ffffff"
-        },
-        "updates": {
-            "fallbackToCacheTimeout": 0
-        },
-        "assetBundlePatterns": ["**/*"],
-        "ios": {
-            "supportsTablet": true,
-            "bundleIdentifier": "com.homexe.homexe"
-        },
-        "web": {
-            "favicon": "./assets/splash.png"
-        }
-    }
+  "expo": {
+    "name": "Homexe.win",
+    "slug": "homexeapp",
+    "version": "2.1.7",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "splash": {
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "updates": {
+      "fallbackToCacheTimeout": 0
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.homexe.homexe"
+    },
+    "web": {
+      "favicon": "./assets/splash.png"
+    },
+    "plugins": [
+      "expo-build-properties"
+    ]
+  }
 }

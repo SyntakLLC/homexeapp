@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import {
     View,
     Dimensions,
@@ -6,7 +6,7 @@ import {
     TouchableOpacity,
     Text,
     AsyncStorage,
-} from 'react-native';
+} from "react-native";
 import {
     HomeSymbol,
     StatisticsSymbol,
@@ -20,23 +20,23 @@ import {
     FilledStatisticsSymbol,
     FilledDealsSymbol,
     FilledUsersSymbol,
-} from './icons';
+} from "./icons";
 import {
     NavigationContainer,
     getFocusedRouteNameFromRoute,
-} from '@react-navigation/native';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { createStackNavigator } from '@react-navigation/stack';
-import Statistics from './screens/Statistics';
-import Users from './screens/Users';
-import NewDashboard from './screens/NewDashboard';
-import Insights from './screens/Insights';
-import Clients from './screens/Clients';
-import ClientShow from './screens/ClientShow';
-import Plus from './screens/Plus';
-import Login from './screens/Login';
-import './global';
-import { connect } from 'react-redux';
+} from "@react-navigation/native";
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { createStackNavigator } from "@react-navigation/stack";
+import Statistics from "./screens/Statistics";
+import Users from "./screens/Users";
+import NewDashboard from "./screens/NewDashboard";
+import Insights from "./screens/Insights";
+import Clients from "./screens/Clients";
+import ClientShow from "./screens/ClientShow";
+import Plus from "./screens/Plus";
+import Login from "./screens/Login";
+import "./global";
+import { connect } from "react-redux";
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -51,37 +51,37 @@ function mapDispatchToProps(dispatch) {
     return {
         updateName: (name) =>
             dispatch({
-                type: 'UPDATE_NAME',
+                type: "UPDATE_NAME",
                 name,
             }),
         updateCalls: (calls) =>
             dispatch({
-                type: 'UPDATE_CALLS',
+                type: "UPDATE_CALLS",
                 calls,
             }),
         updateAppointments: (appointments) =>
             dispatch({
-                type: 'UPDATE_APPOINTMENTS',
+                type: "UPDATE_APPOINTMENTS",
                 appointments,
             }),
         updateClients: (clients) =>
             dispatch({
-                type: 'UPDATE_CLIENTS',
+                type: "UPDATE_CLIENTS",
                 clients,
             }),
         updateListings: (listings) =>
             dispatch({
-                type: 'UPDATE_LISTINGS',
+                type: "UPDATE_LISTINGS",
                 listings,
             }),
         updateLineChartData: (lineChartData) =>
             dispatch({
-                type: 'UPDATE_LINE_CHART_DATA',
+                type: "UPDATE_LINE_CHART_DATA",
                 lineChartData,
             }),
         updateGoal: (goal) =>
             dispatch({
-                type: 'UPDATE_GOAL',
+                type: "UPDATE_GOAL",
                 goal,
             }),
     };
@@ -91,13 +91,13 @@ class ClientStack extends React.Component {
     render() {
         return (
             <Stack.Navigator
-                initialRouteName='Clients'
+                initialRouteName="Clients"
                 screenOptions={({ route }) => ({
                     headerShown: false,
                 })}
             >
-                <Stack.Screen name='Clients' component={Clients} />
-                <Stack.Screen name='ClientShow' component={ClientShow} />
+                <Stack.Screen name="Clients" component={Clients} />
+                <Stack.Screen name="ClientShow" component={ClientShow} />
             </Stack.Navigator>
         );
     }
@@ -105,13 +105,13 @@ class ClientStack extends React.Component {
 
 class Tabs extends React.Component {
     async getCalls() {
-        const token = await AsyncStorage.getItem('token');
-        const name = await AsyncStorage.getItem('name');
-        await fetch('https://homexe.win/api/call/get', {
+        const token = await AsyncStorage.getItem("token");
+        const name = await AsyncStorage.getItem("name");
+        await fetch("https://homexe.win/api/call/get", {
             headers: new Headers({
-                Authorization: 'Bearer ' + token,
-                'Content-Type': 'application/json',
-                Accept: 'application/json',
+                Authorization: "Bearer " + token,
+                "Content-Type": "application/json",
+                Accept: "application/json",
             }),
         })
             .then((response) => response.json())
@@ -121,13 +121,13 @@ class Tabs extends React.Component {
     }
 
     async getAppointments() {
-        const token = await AsyncStorage.getItem('token');
-        const name = await AsyncStorage.getItem('name');
-        await fetch('https://homexe.win/api/appointment/get', {
+        const token = await AsyncStorage.getItem("token");
+        const name = await AsyncStorage.getItem("name");
+        await fetch("https://homexe.win/api/appointment/get", {
             headers: new Headers({
-                Authorization: 'Bearer ' + token,
-                'Content-Type': 'application/json',
-                Accept: 'application/json',
+                Authorization: "Bearer " + token,
+                "Content-Type": "application/json",
+                Accept: "application/json",
             }),
         })
             .then((response) => response.json())
@@ -137,13 +137,13 @@ class Tabs extends React.Component {
     }
 
     async getClients() {
-        const token = await AsyncStorage.getItem('token');
-        const name = await AsyncStorage.getItem('name');
-        await fetch('https://homexe.win/client/get', {
+        const token = await AsyncStorage.getItem("token");
+        const name = await AsyncStorage.getItem("name");
+        await fetch("https://homexe.win/client/get", {
             headers: new Headers({
-                Authorization: 'Bearer ' + token,
-                'Content-Type': 'application/json',
-                Accept: 'application/json',
+                Authorization: "Bearer " + token,
+                "Content-Type": "application/json",
+                Accept: "application/json",
             }),
         })
             .then((response) => response.json())
@@ -153,13 +153,13 @@ class Tabs extends React.Component {
     }
 
     async getListings() {
-        const token = await AsyncStorage.getItem('token');
-        const name = await AsyncStorage.getItem('name');
-        await fetch('https://homexe.win/listing/get', {
+        const token = await AsyncStorage.getItem("token");
+        const name = await AsyncStorage.getItem("name");
+        await fetch("https://homexe.win/listing/get", {
             headers: new Headers({
-                Authorization: 'Bearer ' + token,
-                'Content-Type': 'application/json',
-                Accept: 'application/json',
+                Authorization: "Bearer " + token,
+                "Content-Type": "application/json",
+                Accept: "application/json",
             }),
         })
             .then((response) => response.json())
@@ -169,13 +169,13 @@ class Tabs extends React.Component {
     }
 
     async getLineChartData() {
-        const token = await AsyncStorage.getItem('token');
-        const name = await AsyncStorage.getItem('name');
-        await fetch('https://homexe.win/api/chart/get', {
+        const token = await AsyncStorage.getItem("token");
+        const name = await AsyncStorage.getItem("name");
+        await fetch("https://homexe.win/api/chart/get", {
             headers: new Headers({
-                Authorization: 'Bearer ' + token,
-                'Content-Type': 'application/json',
-                Accept: 'application/json',
+                Authorization: "Bearer " + token,
+                "Content-Type": "application/json",
+                Accept: "application/json",
             }),
         })
             .then((response) => response.json())
@@ -185,13 +185,13 @@ class Tabs extends React.Component {
     }
 
     async getGoal() {
-        const token = await AsyncStorage.getItem('token');
-        const name = await AsyncStorage.getItem('name');
-        await fetch('https://homexe.win/api/goal/get', {
+        const token = await AsyncStorage.getItem("token");
+        const name = await AsyncStorage.getItem("name");
+        await fetch("https://homexe.win/api/goal/get", {
             headers: new Headers({
-                Authorization: 'Bearer ' + token,
-                'Content-Type': 'application/json',
-                Accept: 'application/json',
+                Authorization: "Bearer " + token,
+                "Content-Type": "application/json",
+                Accept: "application/json",
             }),
         })
             .then((response) => response.json())
@@ -214,17 +214,17 @@ class Tabs extends React.Component {
         return (
             <Tab.Navigator
                 tabBar={(props) => <TabBar {...props} />}
-                initialRouteName='NewDashboard'
+                initialRouteName="NewDashboard"
                 screenOptions={({ route }) => ({
                     headerShown: false,
                 })}
             >
-                <Tab.Screen name='Statistics' component={Statistics} />
-                <Tab.Screen name='Plus' component={Plus} />
-                <Tab.Screen name='Insights' component={Insights} />
-                <Tab.Screen name='NewDashboard' component={NewDashboard} />
-                <Tab.Screen name='Clients' component={ClientStack} />
-                <Tab.Screen name='Users' component={Users} />
+                <Tab.Screen name="Statistics" component={Statistics} />
+                <Tab.Screen name="Plus" component={Plus} />
+                <Tab.Screen name="Insights" component={Insights} />
+                <Tab.Screen name="NewDashboard" component={NewDashboard} />
+                <Tab.Screen name="Clients" component={ClientStack} />
+                <Tab.Screen name="Users" component={Users} />
             </Tab.Navigator>
         );
     }
@@ -233,12 +233,12 @@ class Tabs extends React.Component {
 export default connect(mapStateToProps, mapDispatchToProps)(Tabs);
 
 function returnTabWidth() {
-    var thing = 'xx';
+    var thing = "xx";
     userIsAdmin().then((res) => {
         if (res) {
-            thing = '16.6%';
+            thing = "16.6%";
         } else {
-            thing = '20%';
+            thing = "20%";
         }
     });
 
@@ -254,65 +254,65 @@ function userIsAdmin() {
 const TabBar = (item) => (
     <View
         style={{
-            height: isIphoneXorAbove() ? 83 : 49,
-            flexDirection: 'row',
-            justifyContent: 'space-between',
+            height: 83,
+            flexDirection: "row",
+            justifyContent: "space-between",
             paddingHorizontal: 20,
             paddingTop: 10,
-            backgroundColor: 'white',
+            backgroundColor: "white",
         }}
     >
         <TouchableOpacity
             style={{
-                display: 'flex',
-                width: userIsAdmin() ? '16.6%' : '20%',
-                alignItems: 'center',
+                display: "flex",
+                width: userIsAdmin() ? "16.6%" : "20%",
+                alignItems: "center",
             }}
-            onPress={() => item.navigation.navigate('NewDashboard')}
+            onPress={() => item.navigation.navigate("NewDashboard")}
         >
             {returnDashboardIcon(item)}
         </TouchableOpacity>
 
         <TouchableOpacity
             style={{
-                display: 'flex',
-                width: userIsAdmin() ? '16.6%' : '20%',
-                alignItems: 'center',
+                display: "flex",
+                width: userIsAdmin() ? "16.6%" : "20%",
+                alignItems: "center",
             }}
-            onPress={() => item.navigation.navigate('Statistics')}
+            onPress={() => item.navigation.navigate("Statistics")}
         >
             {returnStatisticsIcon(item)}
         </TouchableOpacity>
 
         <TouchableOpacity
             style={{
-                display: 'flex',
-                width: userIsAdmin() ? '16.6%' : '20%',
-                alignItems: 'center',
+                display: "flex",
+                width: userIsAdmin() ? "16.6%" : "20%",
+                alignItems: "center",
             }}
-            onPress={() => item.navigation.navigate('Plus')}
+            onPress={() => item.navigation.navigate("Plus")}
         >
             {returnPlusIcon(item)}
         </TouchableOpacity>
 
         <TouchableOpacity
             style={{
-                display: 'flex',
-                width: userIsAdmin() ? '16.6%' : '20%',
-                alignItems: 'center',
+                display: "flex",
+                width: userIsAdmin() ? "16.6%" : "20%",
+                alignItems: "center",
             }}
-            onPress={() => item.navigation.navigate('Insights')}
+            onPress={() => item.navigation.navigate("Insights")}
         >
             {returnInsightsIcon(item)}
         </TouchableOpacity>
 
         <TouchableOpacity
             style={{
-                display: 'flex',
-                width: userIsAdmin() ? '16.6%' : '20%',
-                alignItems: 'center',
+                display: "flex",
+                width: userIsAdmin() ? "16.6%" : "20%",
+                alignItems: "center",
             }}
-            onPress={() => item.navigation.navigate('Clients')}
+            onPress={() => item.navigation.navigate("Clients")}
         >
             {returnDealsIcon(item)}
         </TouchableOpacity>
@@ -330,23 +330,10 @@ const TabBar = (item) => (
     </View>
 );
 
-function isIphoneXorAbove() {
-    const dimen = Dimensions.get('window');
-    return (
-        Platform.OS === 'ios' &&
-        !Platform.isPad &&
-        !Platform.isTVOS &&
-        (dimen.height === 812 ||
-            dimen.width === 812 ||
-            dimen.height === 896 ||
-            dimen.width === 896)
-    );
-}
-
 function returnDashboardIcon(item) {
-    const { index, routes } = item.navigation.dangerouslyGetState();
+    const { index, routes } = item.navigation.getState();
     const currentRoute = routes[index].name;
-    if (currentRoute == 'NewDashboard') {
+    if (currentRoute == "NewDashboard") {
         return (
             <View>
                 <FilledHomeSymbol
@@ -360,7 +347,7 @@ function returnDashboardIcon(item) {
                         height: 6,
                         backgroundColor: global.primaryColor,
                         borderRadius: 6,
-                        alignSelf: 'center',
+                        alignSelf: "center",
                     }}
                 />
             </View>
@@ -373,9 +360,9 @@ function returnDashboardIcon(item) {
 }
 
 function returnStatisticsIcon(item) {
-    const { index, routes } = item.navigation.dangerouslyGetState();
+    const { index, routes } = item.navigation.getState();
     const currentRoute = routes[index].name;
-    if (currentRoute == 'Statistics') {
+    if (currentRoute == "Statistics") {
         return (
             <View>
                 <FilledStatisticsSymbol
@@ -389,7 +376,7 @@ function returnStatisticsIcon(item) {
                         height: 6,
                         backgroundColor: global.primaryColor,
                         borderRadius: 6,
-                        alignSelf: 'center',
+                        alignSelf: "center",
                     }}
                 />
             </View>
@@ -406,10 +393,10 @@ function returnStatisticsIcon(item) {
 }
 
 function returnInsightsIcon(item) {
-    const { index, routes } = item.navigation.dangerouslyGetState();
+    const { index, routes } = item.navigation.getState();
     const currentRoute = routes[index].name;
 
-    if (currentRoute == 'Insights') {
+    if (currentRoute == "Insights") {
         return (
             <View>
                 <FilledInsightsSymbol
@@ -423,7 +410,7 @@ function returnInsightsIcon(item) {
                         height: 6,
                         backgroundColor: global.primaryColor,
                         borderRadius: 6,
-                        alignSelf: 'center',
+                        alignSelf: "center",
                     }}
                 />
             </View>
@@ -440,10 +427,10 @@ function returnInsightsIcon(item) {
 }
 
 function returnDealsIcon(item) {
-    const { index, routes } = item.navigation.dangerouslyGetState();
+    const { index, routes } = item.navigation.getState();
     const currentRoute = routes[index].name;
 
-    if (currentRoute == 'Clients') {
+    if (currentRoute == "Clients") {
         return (
             <View>
                 <FilledDealsSymbol
@@ -457,7 +444,7 @@ function returnDealsIcon(item) {
                         height: 6,
                         backgroundColor: global.primaryColor,
                         borderRadius: 6,
-                        alignSelf: 'center',
+                        alignSelf: "center",
                     }}
                 />
             </View>
@@ -470,10 +457,10 @@ function returnDealsIcon(item) {
 }
 
 function returnPlusIcon(item) {
-    const { index, routes } = item.navigation.dangerouslyGetState();
+    const { index, routes } = item.navigation.getState();
     const currentRoute = routes[index].name;
 
-    if (currentRoute == 'Plus') {
+    if (currentRoute == "Plus") {
         return (
             <View>
                 <FilledPlusSymbol
@@ -487,7 +474,7 @@ function returnPlusIcon(item) {
                         height: 6,
                         backgroundColor: global.primaryColor,
                         borderRadius: 6,
-                        alignSelf: 'center',
+                        alignSelf: "center",
                     }}
                 />
             </View>
@@ -500,10 +487,10 @@ function returnPlusIcon(item) {
 }
 
 function returnUsersIcon(item) {
-    const { index, routes } = item.navigation.dangerouslyGetState();
+    const { index, routes } = item.navigation.getState();
     const currentRoute = routes[index].name;
 
-    if (currentRoute == 'Users') {
+    if (currentRoute == "Users") {
         return (
             <View>
                 <FilledUsersSymbol
@@ -517,7 +504,7 @@ function returnUsersIcon(item) {
                         height: 6,
                         backgroundColor: global.primaryColor,
                         borderRadius: 6,
-                        alignSelf: 'center',
+                        alignSelf: "center",
                     }}
                 />
             </View>

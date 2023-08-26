@@ -1,6 +1,6 @@
-import React from 'react';
-import tailwind from 'tailwind-rn';
-import LineChart from '../components/LineChart';
+import React from "react";
+import tailwind from "tailwind-rn";
+import LineChart from "../components/LineChart";
 import {
     ScrollView,
     View,
@@ -10,10 +10,11 @@ import {
     Text,
     AsyncStorage,
     Alert,
-} from 'react-native';
-import { DollarSymbol, HomeSymbol, LeadSymbol, PhoneSymbol } from '../icons';
-import ActivityRings from 'react-native-activity-rings';
-import { connect } from 'react-redux';
+    ActivityIndicator,
+} from "react-native";
+import { DollarSymbol, HomeSymbol, LeadSymbol, PhoneSymbol } from "../icons";
+import ActivityRings from "../components/ActivityRings";
+import { connect } from "react-redux";
 import {
     Title,
     Subtitle,
@@ -24,11 +25,11 @@ import {
     LogoutButton,
     StockPrice,
     StockChange,
-} from '../components/components';
-import Users from './Users';
+} from "../components/components";
+import Users from "./Users";
 
 // AsyncStorage stuff regarding the login status:
-const USER_KEY = 'auth-key-csv';
+const USER_KEY = "auth-key-csv";
 const onSignOut = () => AsyncStorage.removeItem(USER_KEY);
 
 // Where we grab the redux name state
@@ -48,43 +49,47 @@ function mapDispatchToProps(dispatch) {
     return {
         updateName: (name) =>
             dispatch({
-                type: 'UPDATE_NAME',
+                type: "UPDATE_NAME",
                 name,
             }),
         updateCalls: (calls) =>
             dispatch({
-                type: 'UPDATE_CALLS',
+                type: "UPDATE_CALLS",
                 calls,
             }),
         updateAppointments: (appointments) =>
             dispatch({
-                type: 'UPDATE_APPOINTMENTS',
+                type: "UPDATE_APPOINTMENTS",
                 appointments,
             }),
         updateClients: (clients) =>
             dispatch({
-                type: 'UPDATE_CLIENTS',
+                type: "UPDATE_CLIENTS",
                 clients,
             }),
         updateListings: (listings) =>
             dispatch({
-                type: 'UPDATE_LISTINGS',
+                type: "UPDATE_LISTINGS",
                 listings,
             }),
         updateLineChartData: (lineChartData) =>
             dispatch({
-                type: 'UPDATE_LINE_CHART_DATA',
+                type: "UPDATE_LINE_CHART_DATA",
                 lineChartData,
             }),
         updateGoal: (goal) =>
             dispatch({
-                type: 'UPDATE_GOAL',
+                type: "UPDATE_GOAL",
                 goal,
             }),
     };
 }
 
 class NewDashboard extends React.Component {
+    state = {
+        switching: false,
+    };
+
     emptyRedux() {
         this.props.updateCalls([]);
         this.props.updateAppointments([]);
@@ -94,8 +99,8 @@ class NewDashboard extends React.Component {
     }
 
     async editGoal(goal) {
-        const token = await AsyncStorage.getItem('token');
-        const id = await AsyncStorage.getItem('id');
+        const token = await AsyncStorage.getItem("token");
+        const id = await AsyncStorage.getItem("id");
         console.log(id);
 
         const data = {
@@ -103,12 +108,12 @@ class NewDashboard extends React.Component {
             goal: parseInt(goal),
         };
 
-        await fetch('https://homexe.win/api/goal/update', {
-            method: 'PUT',
+        await fetch("https://homexe.win/api/goal/update", {
+            method: "PUT",
             headers: new Headers({
-                Authorization: 'Bearer ' + token,
-                'Content-Type': 'application/json',
-                Accept: 'application/json',
+                Authorization: "Bearer " + token,
+                "Content-Type": "application/json",
+                Accept: "application/json",
             }),
             body: JSON.stringify(data),
         })
@@ -122,9 +127,9 @@ class NewDashboard extends React.Component {
 
     returnStockChange() {
         let current =
-            this.props.lineChartData[this.props.lineChartData.length - 1];
+            this.props.lineChartData[this.props.lineChartData?.length - 1];
         let lastMonth =
-            this.props.lineChartData[this.props.lineChartData.length - 2];
+            this.props.lineChartData[this.props.lineChartData?.length - 2];
         let change = current - lastMonth;
 
         if (isNaN(change)) {
@@ -136,9 +141,9 @@ class NewDashboard extends React.Component {
                 <StockChange
                     positive={true}
                     text={
-                        '$' +
+                        "$" +
                         global.numberWithCommas(change.toFixed(0)) +
-                        ' ↑ month'
+                        " ↑ month"
                     }
                 />
             );
@@ -147,9 +152,9 @@ class NewDashboard extends React.Component {
                 <StockChange
                     positive={false}
                     text={
-                        '$' +
+                        "$" +
                         global.numberWithCommas(Math.abs(change).toFixed(0)) +
-                        ' ↓ month'
+                        " ↓ month"
                     }
                 />
             );
@@ -158,7 +163,7 @@ class NewDashboard extends React.Component {
 
     returnGoalPercentage() {
         let percentage =
-            this.props.lineChartData[this.props.lineChartData.length - 1] /
+            this.props.lineChartData[this.props.lineChartData?.length - 1] /
             parseInt(this.props.goal);
 
         return percentage > 1 ? 1.0 : percentage;
@@ -166,26 +171,30 @@ class NewDashboard extends React.Component {
 
     storeToken = async (token) => {
         try {
-            await AsyncStorage.setItem('token', token);
+            await AsyncStorage.setItem("token", token);
         } catch (error) {}
     };
 
     switchUserTo = async (name) => {
         try {
-            await AsyncStorage.setItem('name', name);
-            this.refreshData();
-        } catch (error) {}
+            this.setState({ switching: true });
+            await AsyncStorage.setItem("name", name);
+            await this.refreshData();
+            this.setState({ switching: false });
+        } catch (error) {
+            this.setState({ switching: false });
+        }
     };
 
     async refreshData() {
-        const token = await AsyncStorage.getItem('token');
-        const name = await AsyncStorage.getItem('name');
+        const token = await AsyncStorage.getItem("token");
+        const name = await AsyncStorage.getItem("name");
 
-        await fetch('https://homexe.win/api/chart/get', {
+        await fetch("https://homexe.win/api/chart/get", {
             headers: new Headers({
-                Authorization: 'Bearer ' + token,
-                'Content-Type': 'application/json',
-                Accept: 'application/json',
+                Authorization: "Bearer " + token,
+                "Content-Type": "application/json",
+                Accept: "application/json",
             }),
         })
             .then((response) => response.json())
@@ -193,11 +202,11 @@ class NewDashboard extends React.Component {
                 this.props.updateLineChartData(data[name]);
             });
 
-        await fetch('https://homexe.win/api/call/get', {
+        await fetch("https://homexe.win/api/call/get", {
             headers: new Headers({
-                Authorization: 'Bearer ' + token,
-                'Content-Type': 'application/json',
-                Accept: 'application/json',
+                Authorization: "Bearer " + token,
+                "Content-Type": "application/json",
+                Accept: "application/json",
             }),
         })
             .then((response) => response.json())
@@ -205,11 +214,11 @@ class NewDashboard extends React.Component {
                 this.props.updateCalls(data[name]);
             });
 
-        await fetch('https://homexe.win/api/appointment/get', {
+        await fetch("https://homexe.win/api/appointment/get", {
             headers: new Headers({
-                Authorization: 'Bearer ' + token,
-                'Content-Type': 'application/json',
-                Accept: 'application/json',
+                Authorization: "Bearer " + token,
+                "Content-Type": "application/json",
+                Accept: "application/json",
             }),
         })
             .then((response) => response.json())
@@ -217,11 +226,11 @@ class NewDashboard extends React.Component {
                 this.props.updateAppointments(data[name]);
             });
 
-        await fetch('https://homexe.win/client/get', {
+        await fetch("https://homexe.win/client/get", {
             headers: new Headers({
-                Authorization: 'Bearer ' + token,
-                'Content-Type': 'application/json',
-                Accept: 'application/json',
+                Authorization: "Bearer " + token,
+                "Content-Type": "application/json",
+                Accept: "application/json",
             }),
         })
             .then((response) => response.json())
@@ -229,11 +238,11 @@ class NewDashboard extends React.Component {
                 this.props.updateClients(data[name]);
             });
 
-        await fetch('https://homexe.win/listing/get', {
+        await fetch("https://homexe.win/listing/get", {
             headers: new Headers({
-                Authorization: 'Bearer ' + token,
-                'Content-Type': 'application/json',
-                Accept: 'application/json',
+                Authorization: "Bearer " + token,
+                "Content-Type": "application/json",
+                Accept: "application/json",
             }),
         })
             .then((response) => response.json())
@@ -241,11 +250,11 @@ class NewDashboard extends React.Component {
                 this.props.updateListings(data[name]);
             });
 
-        await fetch('https://homexe.win/api/goal/get', {
+        await fetch("https://homexe.win/api/goal/get", {
             headers: new Headers({
-                Authorization: 'Bearer ' + token,
-                'Content-Type': 'application/json',
-                Accept: 'application/json',
+                Authorization: "Bearer " + token,
+                "Content-Type": "application/json",
+                Accept: "application/json",
             }),
         })
             .then((response) => response.json())
@@ -261,39 +270,55 @@ class NewDashboard extends React.Component {
                 style={{
                     height: global.screenHeight,
                     width: global.screenWidth,
-                    backgroundColor: '#fff',
-                    height: Dimensions.get('window').height,
+                    backgroundColor: "#fff",
+                    height: Dimensions.get("window").height,
                 }}
             >
+                {this.state.switching && (
+                    <View
+                        style={{
+                            zIndex: 100,
+                            width: "100%",
+                            height: "100%",
+                            position: "absolute",
+                            backgroundColor: "#00000050",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                        }}
+                    >
+                        <ActivityIndicator color="white" size="large" />
+                    </View>
+                )}
                 <ScrollView
                     style={{ paddingHorizontal: 16 }}
                     contentContainerStyle={{ paddingBottom: 120 }}
                 >
-                    <View style={tailwind('mt-6 mb-4 flex-col')}>
+                    <View style={tailwind("mt-6 mb-4 flex-col")}>
                         <StockPrice
                             text={
-                                this.props.lineChartData.length > 0
-                                    ? '$' +
+                                this.props.lineChartData?.length > 0
+                                    ? "$" +
                                       global.numberWithCommas(
                                           this.props.lineChartData[
-                                              this.props.lineChartData.length -
+                                              this.props.lineChartData?.length -
                                                   1
-                                          ].toFixed(2),
+                                          ].toFixed(2)
                                       )
-                                    : 'Loading...'
+                                    : "Loading..."
                             }
                         />
                         {this.returnStockChange()}
                         <Text
                             style={{
                                 color: global.secondaryColor,
-                                fontWeight: 'bold',
+                                fontWeight: "bold",
                                 fontSize: 20,
                             }}
                         >
-                            {'Goal: $' +
+                            {"Goal: $" +
                                 global.numberWithCommas(
-                                    parseInt(this.props.goal),
+                                    parseInt(this.props.goal)
                                 )}
                         </Text>
                     </View>
@@ -303,7 +328,7 @@ class NewDashboard extends React.Component {
                     <RowView
                         first={
                             <DashboardGridItem
-                                text={'Goal\nTracker'}
+                                text={"Goal\nTracker"}
                                 symbol={<DollarSymbol width={30} height={30} />}
                                 content={
                                     <RowView
@@ -336,10 +361,10 @@ class NewDashboard extends React.Component {
                                                                 .length - 1
                                                         ] /
                                                             parseInt(
-                                                                this.props.goal,
+                                                                this.props.goal
                                                             )) *
-                                                        100
-                                                    ).toFixed(0) + '%'
+                                                            100 || 0
+                                                    ).toFixed(0) + "%"
                                                 }
                                             />
                                         }
@@ -349,13 +374,13 @@ class NewDashboard extends React.Component {
                         }
                         second={
                             <DashboardGridItem
-                                text='Appts'
+                                text="Appts"
                                 symbol={<HomeSymbol width={30} height={30} />}
                                 content={
                                     <View style={{ paddingTop: 10 }}>
                                         <RowView
                                             first={
-                                                <SmallestTitle text={'Day: '} />
+                                                <SmallestTitle text={"Day: "} />
                                             }
                                             second={
                                                 <AdaptiveSmallestTitle
@@ -369,7 +394,7 @@ class NewDashboard extends React.Component {
                                         <RowView
                                             first={
                                                 <SmallestTitle
-                                                    text={'Week: '}
+                                                    text={"Week: "}
                                                 />
                                             }
                                             second={
@@ -384,7 +409,7 @@ class NewDashboard extends React.Component {
                                         <RowView
                                             first={
                                                 <SmallestTitle
-                                                    text={'Month: '}
+                                                    text={"Month: "}
                                                 />
                                             }
                                             second={
@@ -404,13 +429,13 @@ class NewDashboard extends React.Component {
                     <RowView
                         first={
                             <DashboardGridItem
-                                text='Calls'
+                                text="Calls"
                                 symbol={<PhoneSymbol width={30} height={30} />}
                                 content={
                                     <View style={{ paddingTop: 10 }}>
                                         <RowView
                                             first={
-                                                <SmallestTitle text={'Day: '} />
+                                                <SmallestTitle text={"Day: "} />
                                             }
                                             second={
                                                 <AdaptiveSmallestTitle
@@ -421,7 +446,7 @@ class NewDashboard extends React.Component {
                                         <RowView
                                             first={
                                                 <SmallestTitle
-                                                    text={'Week: '}
+                                                    text={"Week: "}
                                                 />
                                             }
                                             second={
@@ -433,7 +458,7 @@ class NewDashboard extends React.Component {
                                         <RowView
                                             first={
                                                 <SmallestTitle
-                                                    text={'Month: '}
+                                                    text={"Month: "}
                                                 />
                                             }
                                             second={
@@ -450,14 +475,14 @@ class NewDashboard extends React.Component {
                         }
                         second={
                             <DashboardGridItem
-                                text='Deals'
+                                text="Deals"
                                 symbol={<LeadSymbol width={30} height={30} />}
                                 content={
                                     <View style={{ paddingTop: 10 }}>
                                         <RowView
                                             first={
                                                 <SmallestTitle
-                                                    text={'Signed: '}
+                                                    text={"Signed: "}
                                                 />
                                             }
                                             second={
@@ -467,9 +492,9 @@ class NewDashboard extends React.Component {
                                                             (client) => {
                                                                 return (
                                                                     client.status ==
-                                                                    'Signed'
+                                                                    "Signed"
                                                                 );
-                                                            },
+                                                            }
                                                         ).length
                                                     }
                                                 />
@@ -478,7 +503,7 @@ class NewDashboard extends React.Component {
                                         <RowView
                                             first={
                                                 <SmallestTitle
-                                                    text={'Contract: '}
+                                                    text={"Contract: "}
                                                 />
                                             }
                                             second={
@@ -488,9 +513,9 @@ class NewDashboard extends React.Component {
                                                             (client) => {
                                                                 return (
                                                                     client.status ==
-                                                                    'Contract'
+                                                                    "Contract"
                                                                 );
-                                                            },
+                                                            }
                                                         ).length
                                                     }
                                                 />
@@ -499,7 +524,7 @@ class NewDashboard extends React.Component {
                                         <RowView
                                             first={
                                                 <SmallestTitle
-                                                    text={'Closed: '}
+                                                    text={"Closed: "}
                                                 />
                                             }
                                             second={
@@ -509,9 +534,9 @@ class NewDashboard extends React.Component {
                                                             (client) => {
                                                                 return (
                                                                     client.status ==
-                                                                    'Closed'
+                                                                    "Closed"
                                                                 );
-                                                            },
+                                                            }
                                                         ).length
                                                     }
                                                 />
@@ -525,82 +550,82 @@ class NewDashboard extends React.Component {
 
                     <TouchableOpacity
                         style={{
-                            width: '100%',
-                            alignItems: 'center',
+                            width: "100%",
+                            alignItems: "center",
                             marginTop: 20,
                         }}
                         onPress={() => {
                             Alert.prompt(
-                                'Change goal',
-                                'Enter your new desired income goal. Please only use numbers.',
+                                "Change goal",
+                                "Enter your new desired income goal. Please only use numbers.",
                                 [
                                     {
-                                        text: 'Cancel',
-                                        style: 'cancel',
+                                        text: "Cancel",
+                                        style: "cancel",
                                     },
                                     {
-                                        text: 'OK',
+                                        text: "OK",
                                         onPress: (goal) => this.editGoal(goal),
                                     },
-                                ],
+                                ]
                             );
                         }}
                     >
-                        <LogoutButton text='Change Goal' />
+                        <LogoutButton text="Change Goal" />
                     </TouchableOpacity>
 
                     <TouchableOpacity
                         style={{
-                            width: '100%',
-                            alignItems: 'center',
+                            width: "100%",
+                            alignItems: "center",
                             marginTop: 8,
                         }}
                         onPress={() => {
                             onSignOut();
                             // this.emptyRedux();
-                            this.props.navigation.navigate('Login');
+                            this.props.navigation.navigate("Login");
                         }}
                     >
                         <LogoutButton
                             reduxName={this.props.name}
-                            text='Logout'
+                            text="Logout"
                         />
                     </TouchableOpacity>
 
                     <SwitchUserButton
-                        user='Tyler'
+                        user="Tyler"
                         onPress={() => {
-                            this.switchUserTo('Tyler Scaglione');
+                            this.switchUserTo("Tyler Scaglione");
                         }}
                     />
                     <SwitchUserButton
-                        user='David'
+                        user="David"
                         onPress={() => {
-                            this.switchUserTo('David Tran');
+                            this.switchUserTo("David Tran");
                         }}
                     />
                     <SwitchUserButton
-                        user='Christian'
+                        user="Christian"
                         onPress={() => {
-                            this.switchUserTo('Christian Molina');
+                            this.switchUserTo("Christian Molina");
                         }}
                     />
                     <SwitchUserButton
-                        user='Jamie'
+                        user="Jamie"
                         onPress={() => {
-                            this.switchUserTo('Jamie Dodd');
+                            this.switchUserTo("Jamie Dodd");
                         }}
                     />
                     <SwitchUserButton
-                        user='Jared'
+                        user="Jared"
                         onPress={() => {
-                            this.switchUserTo('Jared Venezia');
+                            this.switchUserTo("Jared Venezia");
                         }}
                     />
                     <SwitchUserButton
-                        user='John'
+                        user="John"
                         onPress={() => {
-                            this.switchUserTo('John Kyle');
+                            this.switchUserTo("John Kyle");
                         }}
                     />
                 </ScrollView>
@@ -615,15 +640,15 @@ const SwitchUserButton = (props) => {
     return (
         <TouchableOpacity
             style={{
-                width: '100%',
-                alignItems: 'center',
+                width: "100%",
+                alignItems: "center",
                 marginTop: 8,
             }}
             onPress={() => {
                 props.onPress();
             }}
         >
-            <LogoutButton text={`Switch to ${props.user.split(' ')}`} />
+            <LogoutButton text={`Switch to ${props.user.split(" ")}`} />
         </TouchableOpacity>
     );
 };

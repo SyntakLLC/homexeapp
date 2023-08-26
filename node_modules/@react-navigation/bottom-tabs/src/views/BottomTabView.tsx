@@ -92,6 +92,7 @@ export default function BottomTabView(props: Props) {
     <SafeAreaProviderCompat>
       <MaybeScreenContainer
         enabled={detachInactiveScreens}
+        hasTwoStates
         style={styles.container}
       >
         {routes.map((route, index) => {
@@ -109,6 +110,7 @@ export default function BottomTabView(props: Props) {
           }
 
           const {
+            freezeOnBlur,
             header = ({ layout, options }: BottomTabHeaderProps) => (
               <Header
                 {...options}
@@ -116,6 +118,9 @@ export default function BottomTabView(props: Props) {
                 title={getHeaderTitle(options, route.name)}
               />
             ),
+            headerShown,
+            headerStatusBarHeight,
+            headerTransparent,
           } = descriptor.options;
 
           return (
@@ -124,17 +129,16 @@ export default function BottomTabView(props: Props) {
               style={[StyleSheet.absoluteFill, { zIndex: isFocused ? 0 : -1 }]}
               visible={isFocused}
               enabled={detachInactiveScreens}
+              freezeOnBlur={freezeOnBlur}
             >
               <BottomTabBarHeightContext.Provider value={tabBarHeight}>
                 <Screen
                   focused={isFocused}
                   route={descriptor.route}
                   navigation={descriptor.navigation}
-                  headerShown={descriptor.options.headerShown}
-                  headerTransparent={descriptor.options.headerTransparent}
-                  headerStatusBarHeight={
-                    descriptor.options.headerStatusBarHeight
-                  }
+                  headerShown={headerShown}
+                  headerStatusBarHeight={headerStatusBarHeight}
+                  headerTransparent={headerTransparent}
                   header={header({
                     layout: dimensions,
                     route: descriptor.route,

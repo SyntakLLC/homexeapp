@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import {
     TouchableOpacity,
     SafeAreaView,
@@ -9,14 +9,14 @@ import {
     Alert,
     AsyncStorage,
     ActivityIndicator,
-} from 'react-native';
-import { connect } from 'react-redux';
-import styled from 'styled-components';
-import * as WebBrowser from 'expo-web-browser';
+} from "react-native";
+import { connect } from "react-redux";
+import styled from "styled-components";
+import * as WebBrowser from "expo-web-browser";
 
 // AsyncStorage stuff regarding the login status:
-const USER_KEY = 'auth-key-csv';
-const onSignIn = () => AsyncStorage.setItem(USER_KEY, 'true');
+const USER_KEY = "auth-key-csv";
+const onSignIn = () => AsyncStorage.setItem(USER_KEY, "true");
 isSignedIn = () => {
     return new Promise((resolve, reject) => {
         AsyncStorage.getItem(USER_KEY)
@@ -41,12 +41,12 @@ function mapDispatchToProps(dispatch) {
     return {
         updateName: (name) =>
             dispatch({
-                type: 'UPDATE_NAME',
+                type: "UPDATE_NAME",
                 name,
             }),
         updateToken: (token) =>
             dispatch({
-                type: 'UPDATE_TOKEN',
+                type: "UPDATE_TOKEN",
                 token,
             }),
     };
@@ -59,17 +59,17 @@ class Login extends React.Component {
         loginModalTop: new Animated.Value(150),
         pickerOpen: true,
         hasLoggedIn: false,
-        loginEmail: '',
-        loginPassword: '',
+        loginEmail: "",
+        loginPassword: "",
         isLoggingIn: false,
     };
 
     async componentDidMount() {
-        this.storeAdmin('false');
+        this.storeAdmin("false");
         this.retrieveName();
         await isSignedIn()
             .then((res) => {
-                res ? this.props.navigation.navigate('Tabs') : {};
+                res ? this.props.navigation.navigate("Tabs") : {};
             })
             .catch((err) => {});
     }
@@ -78,12 +78,12 @@ class Login extends React.Component {
     signIn() {
         this.setState({ isLoggingIn: true });
         try {
-            var url = 'http://homexe.win/api/sanctum/token';
+            var url = "http://homexe.win/api/sanctum/token";
 
             var xhr = new XMLHttpRequest();
-            xhr.open('POST', url);
+            xhr.open("POST", url);
 
-            xhr.setRequestHeader('Content-Type', 'application/json');
+            xhr.setRequestHeader("Content-Type", "application/json");
 
             xhr.onreadystatechange = () => {
                 if (xhr.readyState === 4) {
@@ -99,19 +99,19 @@ class Login extends React.Component {
                         this.storeName(name);
                         this.storeId(id);
                         if (admin == 1) {
-                            this.storeAdmin('true');
+                            this.storeAdmin("true");
                         } else {
-                            this.storeAdmin('false');
+                            this.storeAdmin("false");
                         }
 
                         onSignIn();
                         this.props.updateName(name);
-                        this.props.navigation.navigate('Tabs');
+                        this.props.navigation.navigate("Tabs");
                         this.setState({ isLoggingIn: false });
                     } catch (e) {
                         Alert.alert(
-                            'Whoops!',
-                            'Your login credentials were incorrect.',
+                            "Whoops!",
+                            "Your login credentials were incorrect."
                         );
                         this.setState({ isLoggingIn: false });
                     }
@@ -137,29 +137,29 @@ class Login extends React.Component {
     // stores the data into AsyncStorage
     storeId = async (id) => {
         try {
-            await AsyncStorage.setItem('id', id.toString());
+            await AsyncStorage.setItem("id", id.toString());
         } catch (error) {}
     };
     storeAdmin = async (admin) => {
         try {
-            await AsyncStorage.setItem('admin', admin);
+            await AsyncStorage.setItem("admin", admin);
         } catch (error) {}
     };
     storeName = async (name) => {
         try {
-            await AsyncStorage.setItem('name', name);
+            await AsyncStorage.setItem("name", name);
         } catch (error) {}
     };
     storeToken = async (token) => {
         try {
-            await AsyncStorage.setItem('token', token);
+            await AsyncStorage.setItem("token", token);
         } catch (error) {}
     };
 
     // Gets the email from AsyncStorage
     retrieveName = async () => {
         try {
-            const name = await AsyncStorage.getItem('name');
+            const name = await AsyncStorage.getItem("name");
 
             if (name !== null) {
                 this.props.updateName(name);
@@ -204,10 +204,10 @@ class Login extends React.Component {
                             style={{
                                 backgroundColor: global.grayColor,
                             }}
-                            placeholder='EMAIL'
-                            fontWeight='bold'
+                            placeholder="EMAIL"
+                            fontWeight="bold"
                             autoCorrect={false}
-                            placeholderTextColor='#11182750'
+                            placeholderTextColor="#11182750"
                             onChangeText={(val) => {
                                 this.setState({ loginEmail: val });
                             }}
@@ -216,12 +216,12 @@ class Login extends React.Component {
                             style={{
                                 backgroundColor: global.grayColor,
                             }}
-                            placeholder='PASSWORD'
-                            fontWeight='bold'
+                            placeholder="PASSWORD"
+                            fontWeight="bold"
                             blurOnSubmit={false}
                             onSubmitEditing={() => Keyboard.dismiss()}
                             secureTextEntry={true}
-                            placeholderTextColor='#11182750'
+                            placeholderTextColor="#11182750"
                             onChangeText={(val) => {
                                 this.setState({ loginPassword: val });
                             }}
@@ -250,8 +250,8 @@ class Login extends React.Component {
                                 // bottom: '4%',
                                 top: 20,
                                 height: 40,
-                                width: '100%',
-                                alignSelf: 'center',
+                                width: "100%",
+                                alignSelf: "center",
                                 marginLeft: 16,
                             }}
                         >
@@ -260,9 +260,9 @@ class Login extends React.Component {
                             >
                                 <AddJobText>
                                     {this.state.isLoggingIn ? (
-                                        <ActivityIndicator color='white' />
+                                        <ActivityIndicator color="white" />
                                     ) : (
-                                        'Log In'
+                                        "Log In"
                                     )}
                                 </AddJobText>
                             </SelectButton>
@@ -271,7 +271,7 @@ class Login extends React.Component {
 
                     {/* The image logo on top for looks */}
                     <LoginLogo
-                        source={{ uri: 'https://i.imgur.com/obvXOnI.gif' }}
+                        source={{ uri: "https://i.imgur.com/obvXOnI.gif" }}
                         style={{ bottom: 350 }}
                     />
                 </AnimatedModalView>
@@ -286,7 +286,7 @@ const SmallerTitle = (item) => (
     <Text
         style={{
             color: global.primaryColor,
-            fontWeight: 'bold',
+            fontWeight: "bold",
             fontSize: 20,
         }}
     >
@@ -347,7 +347,7 @@ const ModalButtonView = styled.View`
     width: 90%;
     min-height: 120;
     margin-left: 5%;
-    border-radius: 15;
+    border-radius: 15px;
     background-color: rgb(255, 255, 255);
     align-items: center;
     margin-bottom: 20;

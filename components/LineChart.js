@@ -1,5 +1,5 @@
-import React from 'react';
-import tailwind from 'tailwind-rn';
+import React from "react";
+import tailwind from "tailwind-rn";
 import {
     TouchableOpacity,
     ScrollView,
@@ -9,10 +9,10 @@ import {
     Dimensions,
     Text,
     Alert,
-} from 'react-native';
-import { LineChart } from 'react-native-chart-kit';
-import moment from 'moment';
-import { connect } from 'react-redux';
+} from "react-native";
+import { LineChart } from "react-native-chart-kit";
+import moment from "moment";
+import { connect } from "react-redux";
 
 // Where we grab the redux name state
 function mapStateToProps(state) {
@@ -29,7 +29,7 @@ function mapDispatchToProps(dispatch) {
     return {
         updateName: (name) =>
             dispatch({
-                type: 'UPDATE_NAME',
+                type: "UPDATE_NAME",
                 name,
             }),
     };
@@ -48,13 +48,13 @@ class LineChartComponent extends React.Component {
     renderDashboardData() {
         var dashboardData = [];
 
-        if (this.props.lineChartData.length == 0) {
+        if (this.props.lineChartData?.length == 0) {
             dashboardData.push(
                 <View
                     style={{
                         height: 253,
-                        width: '100%',
-                        alignSelf: 'center',
+                        width: "100%",
+                        alignSelf: "center",
                         backgroundColor: global.chartColor,
                         borderRadius: 25,
                     }}
@@ -63,11 +63,11 @@ class LineChartComponent extends React.Component {
                         color={global.primaryColor}
                         style={{
                             height: 253,
-                            width: '100%',
-                            alignSelf: 'center',
+                            width: "100%",
+                            alignSelf: "center",
                         }}
                     />
-                </View>,
+                </View>
             );
         } else {
             dashboardData.push(
@@ -84,16 +84,16 @@ class LineChartComponent extends React.Component {
                             datasets: [
                                 {
                                     data: this.props.lineChartData.slice(
-                                        this.props.lineChartData.length -
+                                        this.props.lineChartData?.length -
                                             this.state.limit,
-                                        this.props.lineChartData.length,
+                                        this.props.lineChartData?.length
                                     ),
                                 },
                             ],
                         }}
-                        width={Dimensions.get('window').width - 30} // from react-native
+                        width={Dimensions.get("window").width - 30} // from react-native
                         height={220}
-                        yAxisLabel='$'
+                        yAxisLabel="$"
                         yAxisInterval={1} // optional, defaults to 1
                         chartConfig={{
                             backgroundColor: global.chartColor,
@@ -108,8 +108,8 @@ class LineChartComponent extends React.Component {
                                 borderRadius: 25,
                             },
                             propsForDots: {
-                                r: '6',
-                                strokeWidth: '2',
+                                r: "6",
+                                strokeWidth: "2",
                                 stroke: global.grayColor,
                             },
                         }}
@@ -121,8 +121,8 @@ class LineChartComponent extends React.Component {
 
                     <View
                         style={{
-                            flexDirection: 'row',
-                            justifyContent: 'space-between',
+                            flexDirection: "row",
+                            justifyContent: "space-between",
                             paddingHorizontal: 20,
                             paddingVertical: 10,
                         }}
@@ -142,8 +142,8 @@ class LineChartComponent extends React.Component {
                         >
                             <Text
                                 style={{
-                                    color: 'white',
-                                    fontWeight: '700',
+                                    color: "white",
+                                    fontWeight: "700",
                                 }}
                             >
                                 3 months
@@ -165,8 +165,8 @@ class LineChartComponent extends React.Component {
                         >
                             <Text
                                 style={{
-                                    color: 'white',
-                                    fontWeight: '700',
+                                    color: "white",
+                                    fontWeight: "700",
                                 }}
                             >
                                 6 months
@@ -188,15 +188,15 @@ class LineChartComponent extends React.Component {
                         >
                             <Text
                                 style={{
-                                    color: 'white',
-                                    fontWeight: '700',
+                                    color: "white",
+                                    fontWeight: "700",
                                 }}
                             >
                                 12 months
                             </Text>
                         </TouchableOpacity>
                     </View>
-                </View>,
+                </View>
             );
         }
 
@@ -206,21 +206,21 @@ class LineChartComponent extends React.Component {
     // shifts the month list so the current month is first
     returnMonthList(limit) {
         var months = [
-            'Jan',
-            'Feb',
-            'Mar',
-            'Apr',
-            'May',
-            'Jun',
-            'Jul',
-            'Aug',
-            'Sep',
-            'Oct',
-            'Nov',
-            'Dec',
+            "Jan",
+            "Feb",
+            "Mar",
+            "Apr",
+            "May",
+            "Jun",
+            "Jul",
+            "Aug",
+            "Sep",
+            "Oct",
+            "Nov",
+            "Dec",
         ];
 
-        let now = moment().format('MMMM');
+        let now = moment().format("MMMM");
         let n = months.indexOf(now.substring(0, 3).toString()) + 1;
         months = this.arrayRotate(months, false, n);
         if (months.length - limit == months.length) {

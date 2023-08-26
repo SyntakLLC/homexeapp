@@ -87,8 +87,6 @@ class Login extends React.Component {
 
             xhr.onreadystatechange = () => {
                 if (xhr.readyState === 4) {
-                    // console.log(xhr.status);
-                    // console.log(xhr.responseText);
                     try {
                         var name = JSON.parse(xhr.responseText).user.name;
                         var admin = JSON.parse(xhr.responseText).user.admin;
@@ -126,9 +124,7 @@ class Login extends React.Component {
                 '", "device_name": "Homexe.win App"}';
 
             xhr.send(data);
-        } catch {
-            // console.log('ERRRO');
-        }
+        } catch {}
     }
 
     // ................................................................

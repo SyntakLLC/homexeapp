@@ -1,6 +1,6 @@
-import React from 'react';
-import tailwind from 'tailwind-rn';
-import { ClientSymbol, PhoneSymbol, EmailSymbol } from '../icons';
+import React from "react";
+import tailwind from "tailwind-rn";
+import { ClientSymbol, PhoneSymbol, EmailSymbol } from "../icons";
 import {
     TouchableOpacity,
     ScrollView,
@@ -13,16 +13,16 @@ import {
     Platform,
     Switch,
     AsyncStorage,
-} from 'react-native';
-import { connect } from 'react-redux';
-import styled from 'styled-components';
+} from "react-native";
+import { connect } from "react-redux";
+import styled from "styled-components";
 import {
     Title,
     LoginInput,
     Picker,
     SelectButton,
     AddJobText,
-} from '../components/components';
+} from "../components/components";
 
 // Where we grab the redux name state
 function mapStateToProps(state) {
@@ -41,12 +41,12 @@ function mapDispatchToProps(dispatch) {
     return {
         updateName: (name) =>
             dispatch({
-                type: 'UPDATE_NAME',
+                type: "UPDATE_NAME",
                 name,
             }),
         updateClients: (clients) =>
             dispatch({
-                type: 'UPDATE_CLIENTS',
+                type: "UPDATE_CLIENTS",
                 clients,
             }),
     };
@@ -62,18 +62,18 @@ class Clients extends React.Component {
         clientType: this.props.route.params.client.client_type,
         gci: this.props.route.params.client.gci,
         salesPrice: this.props.route.params.client.sales_price,
-        commission: '',
+        commission: "",
         capped: this.props.route.params.client.capped == 1 ? true : false,
         address: this.props.route.params.client.address,
     };
 
     async refreshClients() {
-        const token = await AsyncStorage.getItem('token');
-        await fetch('https://homexe.win/client/get', {
+        const token = await AsyncStorage.getItem("token");
+        await fetch("https://homexe.win/client/get", {
             headers: new Headers({
-                Authorization: 'Bearer ' + token,
-                'Content-Type': 'application/json',
-                Accept: 'application/json',
+                Authorization: "Bearer " + token,
+                "Content-Type": "application/json",
+                Accept: "application/json",
             }),
         })
             .then((response) => response.json())
@@ -83,7 +83,7 @@ class Clients extends React.Component {
     }
 
     async updateClient() {
-        const token = await AsyncStorage.getItem('token');
+        const token = await AsyncStorage.getItem("token");
 
         const data = {
             clientId: this.props.route.params.client.uuid,
@@ -99,14 +99,12 @@ class Clients extends React.Component {
             gci: this.state.gci,
         };
 
-        // console.log(data);
-
-        await fetch('https://homexe.win/api/client/update', {
-            method: 'PUT',
+        await fetch("https://homexe.win/api/client/update", {
+            method: "PUT",
             headers: new Headers({
-                Authorization: 'Bearer ' + token,
-                'Content-Type': 'application/json',
-                Accept: 'application/json',
+                Authorization: "Bearer " + token,
+                "Content-Type": "application/json",
+                Accept: "application/json",
             }),
             body: JSON.stringify(data),
         })
@@ -124,38 +122,38 @@ class Clients extends React.Component {
             <SafeAreaView
                 style={{
                     paddingHorizontal: 8,
-                    backgroundColor: '#fff',
-                    height: Dimensions.get('window').height,
+                    backgroundColor: "#fff",
+                    height: Dimensions.get("window").height,
                 }}
             >
                 <ScrollView
                     style={{ paddingHorizontal: 16 }}
                     contentContainerStyle={{ paddingBottom: 120 }}
                 >
-                    <View style={tailwind('mt-6 mb-4 flex-col')}>
+                    <View style={tailwind("mt-6 mb-4 flex-col")}>
                         <Title text={this.props.route.params.client.name} />
                     </View>
 
                     <View
                         style={{
-                            width: '100%',
+                            width: "100%",
                             paddingBottom: 40,
                             backgroundColor: global.chartColor,
-                            alignItems: 'center',
+                            alignItems: "center",
                             paddingTop: 10,
                             borderRadius: 20,
                         }}
                     >
                         <LoginInput
                             style={{
-                                backgroundColor: '#fff',
+                                backgroundColor: "#fff",
                             }}
                             value={this.state.name}
-                            placeholder='NAME'
-                            autoCapitalize='words'
-                            fontWeight='bold'
+                            placeholder="NAME"
+                            autoCapitalize="words"
+                            fontWeight="bold"
                             autoCorrect={false}
-                            placeholderTextColor='#11182750'
+                            placeholderTextColor="#11182750"
                             onChangeText={(val) => {
                                 this.setState({ name: val });
                             }}
@@ -189,13 +187,13 @@ class Clients extends React.Component {
                         />*/}
                         <LoginInput
                             style={{
-                                backgroundColor: '#fff',
+                                backgroundColor: "#fff",
                             }}
                             value={this.state.address}
-                            placeholder='ADDRESS'
-                            fontWeight='bold'
+                            placeholder="ADDRESS"
+                            fontWeight="bold"
                             autoCorrect={false}
-                            placeholderTextColor='#11182750'
+                            placeholderTextColor="#11182750"
                             onChangeText={(val) => {
                                 this.setState({ address: val });
                             }}
@@ -208,11 +206,11 @@ class Clients extends React.Component {
                             }
                         >
                             <Picker.Item
-                                label='Select Client Type'
-                                value='NONE'
+                                label="Select Client Type"
+                                value="NONE"
                             />
-                            <Picker.Item label='Listing' value='Listing' />
-                            <Picker.Item label='Buyer' value='Buyer' />
+                            <Picker.Item label="Listing" value="Listing" />
+                            <Picker.Item label="Buyer" value="Buyer" />
                         </Picker>
 
                         <Picker
@@ -221,22 +219,22 @@ class Clients extends React.Component {
                                 this.setState({ status: itemValue })
                             }
                         >
-                            <Picker.Item label='Select Status' value='NONE' />
-                            <Picker.Item label='Signed' value='Signed' />
-                            <Picker.Item label='Contract' value='Contract' />
-                            <Picker.Item label='Closed' value='Closed' />
+                            <Picker.Item label="Select Status" value="NONE" />
+                            <Picker.Item label="Signed" value="Signed" />
+                            <Picker.Item label="Contract" value="Contract" />
+                            <Picker.Item label="Closed" value="Closed" />
                         </Picker>
 
-                        {this.state.status == 'Contract' ? (
+                        {this.state.status == "Contract" ? (
                             <LoginInput
                                 style={{
-                                    backgroundColor: '#fff',
+                                    backgroundColor: "#fff",
                                 }}
                                 value={this.state.closingDate}
-                                placeholder='CLOSING DATE (MM/DD/YY)'
-                                fontWeight='bold'
+                                placeholder="CLOSING DATE (MM/DD/YY)"
+                                fontWeight="bold"
                                 autoCorrect={false}
-                                placeholderTextColor='#11182750'
+                                placeholderTextColor="#11182750"
                                 onChangeText={(val) => {
                                     this.setState({ closingDate: val });
                                 }}
@@ -247,14 +245,14 @@ class Clients extends React.Component {
 
                         <LoginInput
                             style={{
-                                backgroundColor: '#fff',
+                                backgroundColor: "#fff",
                             }}
                             value={this.state.salesPrice}
-                            keyboardType='numeric'
-                            placeholder='SALES PRICE'
-                            fontWeight='bold'
+                            keyboardType="numeric"
+                            placeholder="SALES PRICE"
+                            fontWeight="bold"
                             autoCorrect={false}
-                            placeholderTextColor='#11182750'
+                            placeholderTextColor="#11182750"
                             onChangeText={(val) => {
                                 this.setState({ salesPrice: val });
                             }}
@@ -262,10 +260,10 @@ class Clients extends React.Component {
 
                         <View
                             style={{
-                                width: '85%',
-                                flexDirection: 'row',
-                                alignItems: 'center',
-                                justifyContent: 'space-between',
+                                width: "85%",
+                                flexDirection: "row",
+                                alignItems: "center",
+                                justifyContent: "space-between",
                                 paddingVertical: 10,
                             }}
                         >
@@ -274,7 +272,7 @@ class Clients extends React.Component {
                                     paddingRight: 20,
                                     fontSize: 17,
                                     color: global.primaryColor,
-                                    fontWeight: 'bold',
+                                    fontWeight: "bold",
                                 }}
                             >
                                 CAPPED?
@@ -282,7 +280,7 @@ class Clients extends React.Component {
 
                             <Switch
                                 trackColor={{
-                                    false: '#767577',
+                                    false: "#767577",
                                     true: global.primaryColor,
                                 }}
                                 onValueChange={(val) =>
@@ -300,8 +298,8 @@ class Clients extends React.Component {
                             style={{
                                 top: 20,
                                 height: 40,
-                                width: '90%',
-                                alignSelf: 'center',
+                                width: "90%",
+                                alignSelf: "center",
                                 marginLeft: 16,
                             }}
                         >
@@ -316,9 +314,9 @@ class Clients extends React.Component {
                     <View
                         style={{
                             height: 200,
-                            width: '100%',
-                            justifyContent: 'center',
-                            alignItems: 'center',
+                            width: "100%",
+                            justifyContent: "center",
+                            alignItems: "center",
                         }}
                     ></View>
                 </ScrollView>

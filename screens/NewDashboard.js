@@ -101,7 +101,6 @@ class NewDashboard extends React.Component {
     async editGoal(goal) {
         const token = await AsyncStorage.getItem("token");
         const id = await AsyncStorage.getItem("id");
-        console.log(id);
 
         const data = {
             userId: parseInt(id),
@@ -259,7 +258,6 @@ class NewDashboard extends React.Component {
         })
             .then((response) => response.json())
             .then((data) => {
-                console.log(data.toString()[name]);
                 this.props.updateGoal(data.toString());
             });
     }

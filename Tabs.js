@@ -196,7 +196,6 @@ class Tabs extends React.Component {
         })
             .then((response) => response.json())
             .then((data) => {
-                console.log(data.toString()[name]);
                 this.props.updateGoal(data.toString());
             });
     }

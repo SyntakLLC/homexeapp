@@ -84,8 +84,6 @@ class Clients extends React.Component {
             gci: 200.0,
         };
 
-        // console.log(data);
-
         await fetch("https://homexe.win/api/client/update", {
             method: "PUT",
             headers: new Headers({
